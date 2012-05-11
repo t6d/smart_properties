@@ -1,5 +1,9 @@
 require "smart_properties/version"
 
 module SmartProperties
-  # Your code goes here...
+  
+  def property
+    
+  end
+  
 end
