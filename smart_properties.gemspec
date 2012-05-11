@@ -14,4 +14,6 @@ Gem::Specification.new do |gem|
   gem.name          = "smart_properties"
   gem.require_paths = ["lib"]
   gem.version       = SmartProperties::VERSION
+  
+  gem.add_development_dependency "rspec", "~> 2.0"
 end
