@@ -4,22 +4,21 @@ module SmartProperties
   
   class Property
 
-    attr_accessor :name
-    attr_accessor :default
-    attr_accessor :converter
-    attr_accessor :validator
+    attr_reader :name
+    attr_reader :default
+    attr_reader :converter
+    attr_reader :validator
+    attr_reader :scope
 
-    def initialize(name, attrs = {})
-      attrs[:viewable] = true unless attrs[:viewable] == false
-
-      self.name = name
-
-      attrs.each do |attr, value|
-        send(:"#{attr}=", value) if respond_to?(:"#{attr}=")
-      end
-
-      self.converter = attrs[:converts]
-      self.validator = attrs[:accepts]
+    def initialize(name, scope, attrs = {})
+      @name      = name.to_sym
+      @scope     = scope
+      @default   = attrs[:default]
+      @converter = attrs[:converts]
+      @validator = attrs[:accepts]
+      @required  = !!attrs[:required]
+      
+      define_delegate_methods
     end
 
     def required=(value)
@@ -30,11 +29,11 @@ module SmartProperties
       @required
     end
 
-    def convert(widget, value)
+    def convert(value)
       return value unless converter
 
       if converter.respond_to?(:call)
-        widget.instance_exec(value, &converter)
+        instance_exec(value, &converter)
       else
         begin
           value.send(:"#{converter}")
@@ -44,40 +43,45 @@ module SmartProperties
       end
     end
 
-    def valid?(widget, value)
+    def valid?(value)
       return true unless value
       return true unless validator
 
       if validator.respond_to?(:call)
-        !!widget.instance_exec(value, &validator)
+        !!instance_exec(value, &validator)
       elsif validator.kind_of?(Enumerable)
         validator.include?(value)
       else
         validator === value
       end
     end
-
-    def define(scope)
-      property = self
-      
-      scope.send(:attr_reader, property.name)
-
-      scope.instance_eval do
-        define_method(:"#{property.name}=") do |value|
-          if property.required? && value.nil?
-            raise ArgumentError, "#{self.class.name} requires the property #{property.name} to be set"
-          end
-
-          value = property.convert(self, value) unless value.nil?
-
-          unless property.valid?(self, value)
-            raise ArgumentError, "#{self.class.name} does not accept #{value.inspect} as value for the property #{property.name}"
-          end
-
-          instance_variable_set(:"@#{property.name}", value)
-        end
+    
+    def set(value)
+      if required? && value.nil?
+        raise ArgumentError, "#{scope.name} requires the property #{name} to be set"
       end
+
+      value = convert(value) unless value.nil?
+
+      unless valid?(value)
+        raise ArgumentError, "#{scope.name} does not accept #{value.inspect} as value for the property #{name}"
+      end
+
+      @value = value
     end
+    
+    def get
+      @value
+    end
+    
+    private
+    
+      def define_delegate_methods
+        property = self
+
+        scope.send(:define_method, name) { property.get }
+        scope.send(:define_method, :"#{name}=") { |value| property.set(value) }
+      end
 
   end
   
@@ -90,14 +94,7 @@ module SmartProperties
     # @return [Array<Property>] The list of properties for this widget.
     #
     def properties
-      result =  (@properties ||= []).dup
-      
-      parent = if self != SmartProperties
-        (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
-      end
-      
-      result = parent.properties + result if parent
-      result
+      (@properties || []).dup
     end
 
     ##
@@ -149,15 +146,17 @@ module SmartProperties
     #                           :required => true
     #
     def property(name, options = {})
-      @smart_property_scope ||= begin
-        m = Module.new
-        include m
-        m
+      @properties ||= begin
+        properties = []
+        
+        parent = if self != SmartProperties
+          (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
+        end
+        
+        parent ? parent.properties + properties : properties
       end
       
-      @properties ||= []
-      @properties << Property.new(name, options)
-      @properties.last.define(@smart_property_scope)
+      @properties << Property.new(name, self, options)
       @properties.last
     end
 
