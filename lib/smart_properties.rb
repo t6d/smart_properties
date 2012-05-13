@@ -94,7 +94,7 @@ module SmartProperties
     # @return [Array<Property>] The list of properties for this widget.
     #
     def properties
-      (@properties || []).dup
+      (@properties || {}).dup
     end
 
     ##
@@ -146,18 +146,15 @@ module SmartProperties
     #                           :required => true
     #
     def property(name, options = {})
-      @properties ||= begin
-        properties = []
-        
+      @properties ||= begin        
         parent = if self != SmartProperties
           (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
         end
         
-        parent ? parent.properties + properties : properties
+        parent ? parent.properties : {}
       end
       
-      @properties << Property.new(name, self, options)
-      @properties.last
+      @properties[name] = Property.new(name, self, options)
     end
 
   end
@@ -173,6 +170,32 @@ module SmartProperties
   end
   
   ##
+  # Reads a property's value. Use this method if you override the
+  # automatically generated getter and want to access it.
+  #
+  def read_property(name)
+    if property = @properties[name]
+      property.get
+    else
+      raise ArgumentError, "#{self.class} does not have a property called #{name}"
+    end
+  end
+  
+  ##
+  # Sets a property's value. Use this method if you override the
+  # automatically generated setter and want to access it.
+  #
+  # @param value the property's new value
+  #
+  def write_property(name, value)
+    if property = @properties[name]
+      property.set(value)
+    else
+      raise ArgumentError, "#{self.class} does not have a property called #{name}"
+    end
+  end
+  
+  ##
   # Creates a new widget from the provided attributes.
   #
   # @param [Hash] attrs the set of attributes that holds the values for the
@@ -181,7 +204,7 @@ module SmartProperties
   def initialize(attrs = {})
     attrs ||= {}
 
-    self.class.properties.each do |property|
+    self.class.properties.each do |_, property|
       value = attrs.key?(property.name) ? attrs.delete(property.name) : property.default
       send(:"#{property.name}=", value)
     end
