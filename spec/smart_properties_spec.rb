@@ -73,7 +73,7 @@ describe SmartProperties do
 
     end
     
-    context "when subclassed" do
+    context "when subclassed and extended with a property called text" do
       
       superklass = subject.call
       
@@ -83,7 +83,7 @@ describe SmartProperties do
         klass
       end
       
-      context "instances of this sublclass and extended with a property called text" do
+      context "instances of this subclass" do
         
         klass = subject.call
         
@@ -95,6 +95,17 @@ describe SmartProperties do
         it { should respond_to(:title=) }
         it { should respond_to(:text) }
         it { should respond_to(:text=) }
+        
+      end
+      
+      context "instances of the super class" do
+        
+        subject do
+          superklass.new
+        end
+        
+        it { should_not respond_to(:text) }
+        it { should_not respond_to(:text=) }
         
       end
       
