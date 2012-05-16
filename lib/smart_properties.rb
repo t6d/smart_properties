@@ -174,7 +174,7 @@ module SmartProperties
   # automatically generated getter and want to access it.
   #
   def read_property(name)
-    if property = @properties[name]
+    if property = self.class.properties[name]
       property.get
     else
       raise ArgumentError, "#{self.class} does not have a property called #{name}"
@@ -188,7 +188,7 @@ module SmartProperties
   # @param value the property's new value
   #
   def write_property(name, value)
-    if property = @properties[name]
+    if property = self.class.properties[name]
       property.set(value)
     else
       raise ArgumentError, "#{self.class} does not have a property called #{name}"

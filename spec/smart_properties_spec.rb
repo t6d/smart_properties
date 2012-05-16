@@ -46,20 +46,15 @@ describe SmartProperties do
         klass.new
       end
       
-      it "should respond to #title" do
-        subject.should respond_to(:title)
-      end
-      
-      it "should respond to #title=" do
-        subject.should respond_to(:title=)
-      end
+      it { should respond_to(:title) }
+      it { should respond_to(:title=) }
       
       it "should have 'chucky' as default value for title" do
         subject.title.should be == 'chunky'
       end
       
       it "should convert all values that are assigned to title into strings" do
-        subject.title = stub(:to_title => 'bacon')
+        subject.title = double(:to_title => 'bacon')
         subject.title.should be == 'bacon'
       end
       
@@ -69,6 +64,15 @@ describe SmartProperties do
       
       it "should not allow to set objects as title that do not respond to #to_title" do
         expect { subject.title = Object.new }.to raise_error(ArgumentError, "Object does not respond to #to_title")
+      end
+      
+      it "should allow to set a title using the #write_property method" do
+        subject.write_property(:title, double(:to_title => 'bacon'))
+        subject.title.should be == 'bacon'
+      end
+      
+      it "should allow to get the title using the #read_property method" do
+        subject.read_property(:title).should be == 'chunky'
       end
 
     end
