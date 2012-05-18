@@ -74,6 +74,13 @@ describe SmartProperties do
       it "should allow to get the title using the #read_property method" do
         subject.read_property(:title).should be == 'chunky'
       end
+      
+      it "should not influence other instances that have been initialized with different attributes" do
+        other = klass.new :title => double(:to_title => 'Lorem ipsum')
+        
+        subject.title.should be == 'chunky'
+        other.title.should   be == 'Lorem ipsum'
+      end
 
     end
     
