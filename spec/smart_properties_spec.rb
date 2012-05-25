@@ -16,7 +16,7 @@ describe SmartProperties do
 
   end
 
-  context "when used to define a smart property called :title on a class" do
+  context "when used to build a class that has a property called :title on a class" do
     
     subject do
       title = Object.new.tap do |o|
@@ -187,5 +187,33 @@ describe SmartProperties do
     end
     
   end
-
+  
+  context "when used to build a class that has a property called :title that which a lambda statement for conversion" do
+    
+    subject do
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+        c.instance_eval do
+          property :title, :converts => lambda { |t| "<title>#{t.to_s}</title>"}
+        end
+      end
+    end
+    
+    context "instances of this class" do
+      
+      klass = subject.call
+      
+      subject do
+        klass.new
+      end
+      
+      it "should convert the property title as specified the lambda statement" do
+        subject.title = "Lorem ipsum"
+        subject.title.should be == "<title>Lorem ipsum</title>"
+      end
+      
+    end
+    
+  end
+  
 end
