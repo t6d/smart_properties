@@ -8,7 +8,6 @@ module SmartProperties
     attr_reader :default
     attr_reader :converter
     attr_reader :accepter
-    attr_reader :scope
 
     def initialize(name, attrs = {})
       @name      = name.to_sym
