@@ -152,6 +152,7 @@ module SmartProperties
       
       @properties[name] = p
     end
+    protected :property
 
   end
   

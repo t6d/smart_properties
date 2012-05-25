@@ -27,13 +27,13 @@ describe SmartProperties do
         c.send(:include, described_class)
         c.instance_eval do
           def name; "TestDummy"; end
+          
+          property :title, :accepts => String,
+                                 :converts => :to_title,
+                                 :required => true,
+                                 :default => title
         end
       end
-      
-      klass.property :title, :accepts => String,
-                             :converts => :to_title,
-                             :required => true,
-                             :default => title
       
       klass
     end
@@ -80,9 +80,11 @@ describe SmartProperties do
       superklass = subject.call
       
       subject do
-        klass = Class.new(superklass)
-        klass.property :text
-        klass
+        Class.new(superklass).tap do |c|
+          c.instance_eval do
+            property :text
+          end
+        end
       end
       
       context "instances of this subclass" do
