@@ -94,7 +94,7 @@ module SmartProperties
     # @return [Array<Property>] The list of properties for this widget.
     #
     def properties
-      (@properties || {}).dup
+      (@_smart_properties || {}).dup
     end
 
     ##
@@ -146,7 +146,7 @@ module SmartProperties
     #                           :required => true
     #
     def property(name, options = {})
-      @properties ||= begin        
+      @_smart_properties ||= begin        
         parent = if self != SmartProperties
           (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
         end
@@ -157,7 +157,7 @@ module SmartProperties
       p = Property.new(name, options)
       p.define(self)
       
-      @properties[name] = p
+      @_smart_properties[name] = p
     end
     protected :property
 
