@@ -121,8 +121,13 @@ describe SmartProperties do
           klass.new :title => stub(:to_title => 'Message'), :text => "Hello"
         end
         
-        its(:title) { should be == 'Message' }
-        its(:text)  { should be == 'Hello' }
+        it "should have the correct title" do
+          subject.title.should be == 'Message'
+        end
+        
+        it "should have the correct text" do
+          subject.text.should be == 'Hello'
+        end
         
       end
       
