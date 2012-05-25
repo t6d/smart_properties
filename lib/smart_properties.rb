@@ -67,8 +67,15 @@ module SmartProperties
       @value = value
     end
     
-    def define(scope)
+    def define(klass)
       property = self
+      
+      scope = klass.instance_variable_get(:"@_smart_properties_method_scope") || begin
+        m = Module.new
+        klass.send(:include, m)
+        klass.instance_variable_set(:"@_smart_properties_method_scope", m)
+        m
+      end
 
       scope.send(:attr_reader, name)
       scope.send(:define_method, :"#{name}=") do |value|
