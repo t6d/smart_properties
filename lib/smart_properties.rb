@@ -7,14 +7,14 @@ module SmartProperties
     attr_reader :name
     attr_reader :default
     attr_reader :converter
-    attr_reader :validator
+    attr_reader :accepter
     attr_reader :scope
 
     def initialize(name, attrs = {})
       @name      = name.to_sym
       @default   = attrs[:default]
       @converter = attrs[:converts]
-      @validator = attrs[:accepts]
+      @accepter  = attrs[:accepts]
       @required  = !!attrs[:required]
     end
 
@@ -40,16 +40,16 @@ module SmartProperties
       end
     end
 
-    def valid?(value, scope)
+    def accepts?(value, scope)
       return true unless value
-      return true unless validator
-
-      if validator.respond_to?(:call)
-        !!scope.instance_exec(value, &validator)
-      elsif validator.kind_of?(Enumerable)
-        validator.include?(value)
+      return true unless accepter
+      
+      if accepter.kind_of?(Enumerable)
+        accepter.include?(value)
+      elsif !accepter.kind_of?(Proc)
+        accepter === value
       else
-        validator === value
+        !!scope.instance_exec(value, &accepter)
       end
     end
     
@@ -60,7 +60,7 @@ module SmartProperties
 
       value = convert(value, scope) unless value.nil?
 
-      unless valid?(value, scope)
+      unless accepts?(value, scope)
         raise ArgumentError, "#{scope.class.name} does not accept #{value.inspect} as value for the property #{self.name}"
       end
 
