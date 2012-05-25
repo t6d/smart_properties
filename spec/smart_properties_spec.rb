@@ -127,7 +127,60 @@ describe SmartProperties do
       end
       
     end
-
+    
+    context "when extended with a :type property at runtime" do
+      
+      klass = subject.call
+      
+      subject do
+        klass.tap do |c|
+          c.instance_eval do
+            property :type, :converts => :to_sym
+          end
+        end
+      end
+      
+      context "instances of this class" do
+        
+        klass = subject.call
+        
+        subject do
+          klass.new :title => double(:to_title => 'Lorem ipsum')
+        end
+        
+        it { should respond_to(:type)  }
+        it { should respond_to(:type=) }
+        
+      end
+      
+      context "when subclassing this class" do
+        
+        superklass = subject.call
+        
+        subject do
+          Class.new(superklass)
+        end
+        
+        context "instances of this class" do
+          
+          klass = subject.call
+          
+          subject do
+            klass.new :title => double(:to_title => 'Lorem ipsum')
+          end
+          
+          it { should respond_to :title }
+          it { should respond_to :title= }
+          
+          it { should respond_to :type }
+          it { should respond_to :type= }
+          
+        end
+        
+      end
+      
+    end
+    
   end
 
 end
