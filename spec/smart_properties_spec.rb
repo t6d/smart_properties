@@ -188,7 +188,7 @@ describe SmartProperties do
     
   end
   
-  context "when used to build a class that has a property called :title that which a lambda statement for conversion" do
+  context "when used to build a class that has a property called :title which a lambda statement for conversion" do
     
     subject do
       Class.new.tap do |c|
@@ -210,6 +210,78 @@ describe SmartProperties do
       it "should convert the property title as specified the lambda statement" do
         subject.title = "Lorem ipsum"
         subject.title.should be == "<title>Lorem ipsum</title>"
+      end
+      
+    end
+    
+  end
+  
+  context "when used to build a class that has a property called :visible which uses an array of valid values for acceptance checking" do
+    
+    subject do
+      Class.new.tap do |c|
+        def c.name; "TestDummy"; end
+        
+        c.send(:include, described_class)
+        
+        c.instance_eval do
+          property :visible, :accepts => [true, false]
+        end
+      end
+    end
+    
+    context "instances of this class" do
+      
+      klass = subject.call
+
+      subject do
+        klass.new
+      end
+      
+      it "should allow to set true as value for visible" do
+        expect { subject.visible = true }.to_not raise_error
+      end
+      
+      it "should allow to set false as value for visible" do
+        expect { subject.visible = false }.to_not raise_error
+      end
+      
+      it "should not allow to set :maybe as value for visible" do
+        expect { subject.visible = :maybe }.to raise_error(ArgumentError, "TestDummy does not accept :maybe as value for the property visible")
+      end
+      
+    end
+    
+  end
+  
+  context 'when used to build a class that has a property called :license_plate which uses a lambda statement for accpetance checking' do
+    
+    subject do
+      Class.new.tap do |c|
+        def c.name; 'TestDummy'; end
+        
+        c.send(:include, described_class)
+        
+        c.instance_eval do
+          property :license_plate, :accepts => lambda { |v| /\w{1,2} \w{1,2} \d{1,4}/.match(v) }
+        end
+      end
+    end
+    
+    context 'instances of this class' do
+      
+      klass = subject.call
+      
+      subject do
+        klass.new
+      end
+      
+      it 'should not a accept "invalid" as value for license_plate' do
+        expect { subject.license_plate = "invalid" }.to raise_error(ArgumentError, 'TestDummy does not accept "invalid" as value for the property license_plate')
+      end
+      
+      it 'should accept "NE RD 1337" as license plate' do
+        expect { subject.license_plate = "NE RD 1337" }.to_not raise_error
       end
       
     end
