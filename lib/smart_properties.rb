@@ -10,15 +10,12 @@ module SmartProperties
     attr_reader :validator
     attr_reader :scope
 
-    def initialize(name, scope, attrs = {})
+    def initialize(name, attrs = {})
       @name      = name.to_sym
-      @scope     = scope
       @default   = attrs[:default]
       @converter = attrs[:converts]
       @validator = attrs[:accepts]
       @required  = !!attrs[:required]
-      
-      define_delegate_methods
     end
 
     def required=(value)
@@ -29,11 +26,11 @@ module SmartProperties
       @required
     end
 
-    def convert(value)
+    def convert(value, scope)
       return value unless converter
 
       if converter.respond_to?(:call)
-        instance_exec(value, &converter)
+        scope.instance_exec(value, &converter)
       else
         begin
           value.send(:"#{converter}")
@@ -43,12 +40,12 @@ module SmartProperties
       end
     end
 
-    def valid?(value)
+    def valid?(value, scope)
       return true unless value
       return true unless validator
 
       if validator.respond_to?(:call)
-        !!instance_exec(value, &validator)
+        !!scope.instance_exec(value, &validator)
       elsif validator.kind_of?(Enumerable)
         validator.include?(value)
       else
@@ -56,32 +53,28 @@ module SmartProperties
       end
     end
     
-    def set(value)
+    def prepare(value, scope)
       if required? && value.nil?
-        raise ArgumentError, "#{scope.name} requires the property #{name} to be set"
+        raise ArgumentError, "#{scope.class.name} requires the property #{self.name} to be set"
       end
 
-      value = convert(value) unless value.nil?
+      value = convert(value, scope) unless value.nil?
 
-      unless valid?(value)
-        raise ArgumentError, "#{scope.name} does not accept #{value.inspect} as value for the property #{name}"
+      unless valid?(value, scope)
+        raise ArgumentError, "#{scope.class.name} does not accept #{value.inspect} as value for the property #{self.name}"
       end
 
       @value = value
     end
     
-    def get
-      @value
-    end
-    
-    private
-    
-      def define_delegate_methods
-        property = self
+    def define(scope)
+      property = self
 
-        scope.send(:define_method, name) { property.get }
-        scope.send(:define_method, :"#{name}=") { |value| property.set(value) }
+      scope.send(:attr_reader, name)
+      scope.send(:define_method, :"#{name}=") do |value|
+        instance_variable_set("@#{property.name}", property.prepare(value, self))
       end
+    end
 
   end
   
@@ -154,7 +147,10 @@ module SmartProperties
         parent ? parent.properties : {}
       end
       
-      @properties[name] = Property.new(name, self, options)
+      p = Property.new(name, options)
+      p.define(self)
+      
+      @properties[name] = p
     end
 
   end

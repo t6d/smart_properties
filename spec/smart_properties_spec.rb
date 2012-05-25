@@ -66,15 +66,6 @@ describe SmartProperties do
         expect { subject.title = Object.new }.to raise_error(ArgumentError, "Object does not respond to #to_title")
       end
       
-      it "should allow to set a title using the #write_property method" do
-        subject.write_property(:title, double(:to_title => 'bacon'))
-        subject.title.should be == 'bacon'
-      end
-      
-      it "should allow to get the title using the #read_property method" do
-        subject.read_property(:title).should be == 'chunky'
-      end
-      
       it "should not influence other instances that have been initialized with different attributes" do
         other = klass.new :title => double(:to_title => 'Lorem ipsum')
         
