@@ -167,32 +167,6 @@ module SmartProperties
   end
   
   ##
-  # Reads a property's value. Use this method if you override the
-  # automatically generated getter and want to access it.
-  #
-  def read_property(name)
-    if property = self.class.properties[name]
-      property.get
-    else
-      raise ArgumentError, "#{self.class} does not have a property called #{name}"
-    end
-  end
-  
-  ##
-  # Sets a property's value. Use this method if you override the
-  # automatically generated setter and want to access it.
-  #
-  # @param value the property's new value
-  #
-  def write_property(name, value)
-    if property = self.class.properties[name]
-      property.set(value)
-    else
-      raise ArgumentError, "#{self.class} does not have a property called #{name}"
-    end
-  end
-  
-  ##
   # Creates a new widget from the provided attributes.
   #
   # @param [Hash] attrs the set of attributes that holds the values for the
