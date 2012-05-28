@@ -1,11 +1,15 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path('../lib/smart_properties/version', __FILE__)
+require File.expand_path('../lib/smart_properties', __FILE__)
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Konstantin Tennhard"]
   gem.email         = ["me@t6d.de"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = <<-DESCRIPTION
+  SmartProperties are a more flexible and feature-rich alternative to
+  traditional Ruby accessors. They provide support for input conversion,
+  input validation, specifying default values and presence checking.
+  DESCRIPTION
+  gem.summary       = %q{SmartProperties – Ruby accessors on steroids}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
@@ -14,4 +18,10 @@ Gem::Specification.new do |gem|
   gem.name          = "smart_properties"
   gem.require_paths = ["lib"]
   gem.version       = SmartProperties::VERSION
+  
+  gem.add_development_dependency "rspec", "~> 2.0"
+  gem.add_development_dependency "rake", "~> 0.8"
+  gem.add_development_dependency "yard", "~> 0.8"
+  gem.add_development_dependency "redcarpet", "~> 2.1"
+  gem.add_development_dependency "guard-rspec", "~> 0.7"
 end
