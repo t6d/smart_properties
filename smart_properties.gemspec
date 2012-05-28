@@ -16,4 +16,6 @@ Gem::Specification.new do |gem|
   gem.version       = SmartProperties::VERSION
   
   gem.add_development_dependency "rspec", "~> 2.0"
+  gem.add_development_dependency "rake", "~> 0.8"
+  gem.add_development_dependency "yard", "~> 0.8"
 end

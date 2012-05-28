@@ -5,3 +5,4 @@ gemspec
 
 gem "guard-rspec"
 gem "ruby_gntp"
+gem "redcarpet"
