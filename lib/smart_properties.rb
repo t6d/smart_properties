@@ -1,3 +1,25 @@
+##
+# {SmartProperties} can be used to easily build more full-fledged accessors 
+# for standard Ruby classes. In contrast to regular accessors, 
+# {SmartProperties} support validation and conversion of input data, as well 
+# as, the specification of default values. Additionally, individual 
+# {SmartProperties} can be marked as required. This causes the runtime to
+# throw an +ArgumentError+ whenever a required property has not been
+# specified.
+#
+# In order to use {SmartProperties}, simply include the {SmartProperties} 
+# module and use the {ClassMethods#property} method to define properties.
+#
+# @see ClassMethods#property 
+#   More information on how to configure properties
+#
+# @example Definition of a property that makes use of all {SmartProperties} features.
+#
+#  property :language_code, :accepts => [:de, :en],
+#                           :converts => :to_sym,
+#                           :default  => :de,
+#                           :required => true
+#
 module SmartProperties
   
   VERSION = "0.0.1"
@@ -87,19 +109,18 @@ module SmartProperties
   module ClassMethods
 
     ##
-    # Returns the list of properties for a widget. This includes the
-    # properties than have been defined in the parent classes.
+    # Returns the list of smart properties that for this class. This 
+    # includes the properties than have been defined in the parent classes.
     #
-    # @return [Array<Property>] The list of properties for this widget.
+    # @return [Array<Property>] The list of properties.
     #
     def properties
       (@_smart_properties || {}).dup
     end
 
     ##
-    # Defines a new property from a name and a set of options. This basically
-    # results in creating a getter and setter pair that provides some
-    # additional features:
+    # Defines a new property from a name and a set of options. This results
+    # results in creating an accessor that has additional features:
     #
     # 1. Validation of input data by specifiying the +:accepts+ option:
     #    If you use a class as value for this option, the setter will check
@@ -117,7 +138,7 @@ module SmartProperties
     #    the block with the value it is about to assign and take the result
     #    of the block instead.
     #
-    # 3. Providing a default value by specifiying an +:default+ option.
+    # 3. Providing a default value by specifiying the +:default+ option.
     #
     # 4. Forcing a property to be present by setting the +:required+ option
     #    to true.
@@ -126,9 +147,9 @@ module SmartProperties
     # @param [Symbol] name the name of the property
     #
     # @param [Hash] options the list of options used to configure the property
-    # @option options [Array, Class, Proc] :accepted
+    # @option options [Array, Class, Proc] :accepts
     #   specifies how the validation is done
-    # @option options [Proc, Symbol] :convert
+    # @option options [Proc, Symbol] :converts
     #   specifies how the conversion is done
     # @option options :default
     #   specifies the default value of the property
@@ -137,7 +158,7 @@ module SmartProperties
     #
     # @return [Property] The defined property.
     #
-    # @example Definition of a property that is mandatory, converts the provided input to a symbol, checks that the symbol is either +:de+ or +:en+, and defaults to +:de+.
+    # @example Definition of a property that makes use of all {SmartProperties} features.
     #
     #  property :language_code, :accepts => [:de, :en],
     #                           :converts => :to_sym,
@@ -179,10 +200,10 @@ module SmartProperties
   end
   
   ##
-  # Creates a new widget from the provided attributes.
+  # Implements a key-value enabled constructor that acts as default
+  # constructor for all {SmartProperties}-enabled classes.
   #
-  # @param [Hash] attrs the set of attributes that holds the values for the
-  #   various properties of this widget
+  # @param [Hash] attrs the set of attributes that is used for initialization
   #
   def initialize(attrs = {})
     attrs ||= {}
