@@ -4,8 +4,12 @@ require File.expand_path('../lib/smart_properties', __FILE__)
 Gem::Specification.new do |gem|
   gem.authors       = ["Konstantin Tennhard"]
   gem.email         = ["me@t6d.de"]
-  gem.description   = %q{TODO: Write a gem description}
-  gem.summary       = %q{TODO: Write a gem summary}
+  gem.description   = <<-DESCRIPTION
+  SmartProperties are a more flexible and feature-rich alternative to
+  traditional Ruby accessors. They provide support for input conversion,
+  input validation, specifying default values and presence checking.
+  DESCRIPTION
+  gem.summary       = %q{SmartProperties – Ruby accessors on steroids}
   gem.homepage      = ""
 
   gem.files         = `git ls-files`.split($\)
