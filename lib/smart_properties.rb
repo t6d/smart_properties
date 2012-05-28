@@ -162,14 +162,20 @@ module SmartProperties
 
   end
   
-  ##
-  # Extends the class, which this module is included in, with a property 
-  # method to define properties.
-  #
-  # @param [Class] base the class this module is included in
-  #
-  def self.included(base)
-    base.extend(ClassMethods)
+  class << self
+    
+    private
+    
+      ##
+      # Extends the class, which this module is included in, with a property 
+      # method to define properties.
+      #
+      # @param [Class] base the class this module is included in
+      #
+      def included(base)
+        base.extend(ClassMethods)
+      end
+    
   end
   
   ##
