@@ -22,7 +22,7 @@
 #
 module SmartProperties
   
-  VERSION = "1.0.0"
+  VERSION = "1.0.1"
   
   class Property
 
@@ -110,12 +110,18 @@ module SmartProperties
 
     ##
     # Returns the list of smart properties that for this class. This 
-    # includes the properties than have been defined in the parent classes.
+    # includes the properties that have been defined in the parent classes.
     #
     # @return [Array<Property>] The list of properties.
     #
     def properties
-      (@_smart_properties || {}).dup
+      @_smart_properties ||= begin        
+        parent = if self != SmartProperties
+          (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
+        end
+        
+        parent ? parent.properties.dup : {}
+      end
     end
 
     ##
@@ -166,18 +172,10 @@ module SmartProperties
     #                           :required => true
     #
     def property(name, options = {})
-      @_smart_properties ||= begin        
-        parent = if self != SmartProperties
-          (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
-        end
-        
-        parent ? parent.properties : {}
-      end
-      
       p = Property.new(name, options)
       p.define(self)
-      
-      @_smart_properties[name] = p
+
+      properties[name] = p
     end
     protected :property
 

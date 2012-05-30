@@ -38,6 +38,9 @@ describe SmartProperties do
       klass
     end
 
+    its(:properties) { should have(1).property }
+    its(:properties) { should have_key(:title) }
+
     context "instances of this class" do
       
       klass = subject.call
@@ -74,7 +77,47 @@ describe SmartProperties do
       end
 
     end
-    
+
+    context "when subclassed" do
+
+      superklass = subject.call
+
+      subject do
+        Class.new(superklass)
+      end
+
+      its(:properties) { should have(1).property }
+      its(:properties) { should have_key(:title) }
+
+      context "instances of this subclass" do
+
+        klass = subject.call
+
+        subject do
+          klass.new
+        end
+
+        it { should respond_to(:title) }
+        it { should respond_to(:title=) }
+
+      end
+
+      context "instances of this subclass that have been intialized from a set of attributes" do
+        
+        klass = subject.call
+        
+        subject do
+          klass.new :title => stub(:to_title => 'Message')
+        end
+        
+        it "should have the correct title" do
+          subject.title.should be == 'Message'
+        end
+        
+      end
+      
+    end
+
     context "when subclassed and extended with a property called text" do
       
       superklass = subject.call
@@ -86,7 +129,11 @@ describe SmartProperties do
           end
         end
       end
-      
+
+      its(:properties) { should have(2).property }
+      its(:properties) { should have_key(:title) }
+      its(:properties) { should have_key(:text) }
+
       context "instances of this subclass" do
         
         klass = subject.call
@@ -144,7 +191,11 @@ describe SmartProperties do
           end
         end
       end
-      
+
+      its(:properties) { should have(2).property }
+      its(:properties) { should have_key(:title) }
+      its(:properties) { should have_key(:type) }
+
       context "instances of this class" do
         
         klass = subject.call
