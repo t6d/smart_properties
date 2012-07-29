@@ -60,8 +60,8 @@ module SmartProperties
       end
     end
     
-    def default
-      @default.kind_of?(Proc) ? @default.call : @default
+    def default(scope)
+      @default.kind_of?(Proc) ? scope.instance_exec(&@default) : @default
     end
 
     def accepts?(value, scope)
@@ -210,7 +210,7 @@ module SmartProperties
     attrs ||= {}
 
     self.class.properties.each do |_, property|
-      value = attrs.key?(property.name) ? attrs.delete(property.name) : property.default
+      value = attrs.key?(property.name) ? attrs.delete(property.name) : property.default(self)
       send(:"#{property.name}=", value)
     end
   end
