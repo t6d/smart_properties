@@ -27,7 +27,6 @@ module SmartProperties
   class Property
 
     attr_reader :name
-    attr_reader :default
     attr_reader :converter
     attr_reader :accepter
 
@@ -59,6 +58,10 @@ module SmartProperties
           raise ArgumentError, "#{value.class.name} does not respond to ##{converter}"
         end
       end
+    end
+    
+    def default
+      @default.kind_of?(Proc) ? @default.call : @default
     end
 
     def accepts?(value, scope)
