@@ -373,14 +373,25 @@ describe SmartProperties do
     
   end
   
-  context 'when used to build a class that has a property called :text whose default value is a lambda statement' do
+  context 'when used to build a class that has a property called :id whose default value is a lambda statement' do
     
     subject do
+      counter = Class.new.tap do |c|
+        
+        c.class_eval do
+          def next
+            @counter ||= 0
+            @counter += 1
+          end
+        end
+        
+      end.new
+      
       Class.new.tap do |c|
         c.send(:include, described_class)
         
         c.instance_eval do
-          property :text, :default => lambda { "-" * 3 }
+          property :id, :default => lambda { counter.next }
         end
       end
     end
@@ -389,12 +400,11 @@ describe SmartProperties do
       
       klass = subject.call
       
-      subject do
-        klass.new
-      end
-      
-      it "should return the result of the lambda statement as default value for :text" do
-        subject.text.should be == '---'
+      it "should have auto-incrementing ids" do
+        first_instance = klass.new
+        second_instance = klass.new
+        
+        (second_instance.id - first_instance.id).should be == 1
       end
       
     end
