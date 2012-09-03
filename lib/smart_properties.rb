@@ -31,11 +31,17 @@ module SmartProperties
     attr_reader :accepter
 
     def initialize(name, attrs = {})
+      attrs = attrs.dup
+      
       @name      = name.to_sym
-      @default   = attrs[:default]
-      @converter = attrs[:converts]
-      @accepter  = attrs[:accepts]
-      @required  = !!attrs[:required]
+      @default   = attrs.delete(:default)
+      @converter = attrs.delete(:converts)
+      @accepter  = attrs.delete(:accepts)
+      @required  = !!attrs.delete(:required)
+      
+      unless attrs.empty?
+        raise ArgumentError, "SmartProperties do not support the following configuration options: #{attrs.keys.join(', ')}."
+      end
     end
 
     def required=(value)

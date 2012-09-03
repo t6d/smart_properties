@@ -13,6 +13,30 @@ describe SmartProperties do
     it "should add a .property method" do
       subject.should respond_to(:property)
     end
+    
+    context "and defining a property with invalid configuration options" do
+      
+      it "should raise an error reporting one invalid option when one invalid option was given" do
+        expect {
+          subject.tap do |c|
+            c.instance_eval do
+              property :title, :invalid_option => 'boom'
+            end
+          end
+        }.to raise_error(ArgumentError, "SmartProperties do not support the following configuration options: invalid_option.")
+      end
+      
+      it "should raise an error reporting three invalid options when three invalid options were given" do
+        expect {
+          subject.tap do |c|
+            c.instance_eval do
+              property :title, :invalid_option_1 => 'boom', :invalid_option_2 => 'boom', :invalid_option_3 => 'boom'
+            end
+          end
+        }.to raise_error(ArgumentError, "SmartProperties do not support the following configuration options: invalid_option_1, invalid_option_2, invalid_option_3.")
+      end
+      
+    end
 
   end
 
