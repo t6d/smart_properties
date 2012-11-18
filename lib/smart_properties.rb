@@ -165,7 +165,7 @@ module SmartProperties
         end
 
         def to_hash
-          Hash[members.zip(entries)]
+          Hash[each_pair.to_a]
         end
       end
     end
