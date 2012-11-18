@@ -115,6 +115,73 @@ module SmartProperties
 
   end
 
+  ##
+  # {AttributeBuilder} is a singleton object that builds and keeps track of
+  # annonymous class that can be used to build attribute hashes for smart
+  # property enabled classes.
+  #
+  class << (AttributeBuilder = Object.new)
+
+    ##
+    # Returns an attribute builder for a given klass. If the attribute builder
+    # does not exist yet, it is created.
+    #
+    # @return [Class]
+    #
+    def [](klass)
+      store.fetch(klass) { new(property_names_for(klass)) }
+    end
+
+    ##
+    # Constructs a hash of attributes for a smart property enabled class using
+    # the instructions provided by the block.
+    #
+    # @return [Hash<String, Object>] Hash of attributes
+    #
+    def build_attributes_for(klass, &block)
+      block.nil? ? {} : self[klass].new(&block).to_hash
+    end
+
+    ##
+    # Returns the name of this singleton object.
+    #
+    # @return String
+    #
+    def inspect
+      "AttributeBuilder"
+    end
+    alias :to_s :inspect
+
+    ##
+    # Creates a new anonymous class that can act as an attribute builder.
+    #
+    # @return [Class]
+    #
+    def new(fields)
+      Struct.new(*fields) do
+        def initialize(*args, &block)
+          super
+          yield(self) if block
+        end
+
+        def to_hash
+          Hash[members.zip(entries)]
+        end
+      end
+    end
+
+    private
+
+      def property_names_for(klass)
+        klass.properties.keys
+      end
+
+      def store
+        @store ||= {}
+      end
+
+  end
+
   module ClassMethods
 
     ##
@@ -212,8 +279,9 @@ module SmartProperties
   #
   # @param [Hash] attrs the set of attributes that is used for initialization
   #
-  def initialize(attrs = {})
+  def initialize(attrs = {}, &block)
     attrs ||= {}
+    attrs = attrs.merge(AttributeBuilder.build_attributes_for(self.class, &block)) if block
 
     self.class.properties.each do |_, property|
       value = attrs.key?(property.name) ? attrs.delete(property.name) : property.default(self)
