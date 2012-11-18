@@ -1,16 +1,16 @@
 ##
-# {SmartProperties} can be used to easily build more full-fledged accessors 
-# for standard Ruby classes. In contrast to regular accessors, 
-# {SmartProperties} support validation and conversion of input data, as well 
-# as, the specification of default values. Additionally, individual 
+# {SmartProperties} can be used to easily build more full-fledged accessors
+# for standard Ruby classes. In contrast to regular accessors,
+# {SmartProperties} support validation and conversion of input data, as well
+# as, the specification of default values. Additionally, individual
 # {SmartProperties} can be marked as required. This causes the runtime to
 # throw an +ArgumentError+ whenever a required property has not been
 # specified.
 #
-# In order to use {SmartProperties}, simply include the {SmartProperties} 
+# In order to use {SmartProperties}, simply include the {SmartProperties}
 # module and use the {ClassMethods#property} method to define properties.
 #
-# @see ClassMethods#property 
+# @see ClassMethods#property
 #   More information on how to configure properties
 #
 # @example Definition of a property that makes use of all {SmartProperties} features.
@@ -21,9 +21,9 @@
 #                           :required => true
 #
 module SmartProperties
-  
-  VERSION = "1.1.0"
-  
+
+  VERSION = "1.2.0"
+
   class Property
 
     attr_reader :name
@@ -32,13 +32,13 @@ module SmartProperties
 
     def initialize(name, attrs = {})
       attrs = attrs.dup
-      
+
       @name      = name.to_sym
       @default   = attrs.delete(:default)
       @converter = attrs.delete(:converts)
       @accepter  = attrs.delete(:accepts)
       @required  = !!attrs.delete(:required)
-      
+
       unless attrs.empty?
         raise ArgumentError, "SmartProperties do not support the following configuration options: #{attrs.keys.join(', ')}."
       end
@@ -65,7 +65,7 @@ module SmartProperties
         end
       end
     end
-    
+
     def default(scope)
       @default.kind_of?(Proc) ? scope.instance_exec(&@default) : @default
     end
@@ -73,7 +73,7 @@ module SmartProperties
     def accepts?(value, scope)
       return true unless value
       return true unless accepter
-      
+
       if accepter.kind_of?(Enumerable)
         accepter.include?(value)
       elsif !accepter.kind_of?(Proc)
@@ -82,7 +82,7 @@ module SmartProperties
         !!scope.instance_exec(value, &accepter)
       end
     end
-    
+
     def prepare(value, scope)
       if required? && value.nil?
         raise ArgumentError, "#{scope.class.name} requires the property #{self.name} to be set"
@@ -96,10 +96,10 @@ module SmartProperties
 
       @value = value
     end
-    
+
     def define(klass)
       property = self
-      
+
       scope = klass.instance_variable_get(:"@_smart_properties_method_scope") || begin
         m = Module.new
         klass.send(:include, m)
@@ -114,21 +114,88 @@ module SmartProperties
     end
 
   end
-  
+
+  ##
+  # {AttributeBuilder} is a singleton object that builds and keeps track of
+  # annonymous class that can be used to build attribute hashes for smart
+  # property enabled classes.
+  #
+  class << (AttributeBuilder = Object.new)
+
+    ##
+    # Returns an attribute builder for a given klass. If the attribute builder
+    # does not exist yet, it is created.
+    #
+    # @return [Class]
+    #
+    def [](klass)
+      store.fetch(klass) { new(property_names_for(klass)) }
+    end
+
+    ##
+    # Constructs a hash of attributes for a smart property enabled class using
+    # the instructions provided by the block.
+    #
+    # @return [Hash<String, Object>] Hash of attributes
+    #
+    def build_attributes_for(klass, &block)
+      block.nil? ? {} : self[klass].new(&block).to_hash
+    end
+
+    ##
+    # Returns the name of this singleton object.
+    #
+    # @return String
+    #
+    def inspect
+      "AttributeBuilder"
+    end
+    alias :to_s :inspect
+
+    ##
+    # Creates a new anonymous class that can act as an attribute builder.
+    #
+    # @return [Class]
+    #
+    def new(fields)
+      Struct.new(*fields) do
+        def initialize(*args, &block)
+          super
+          yield(self) if block
+        end
+
+        def to_hash
+          Hash[members.zip(entries)]
+        end
+      end
+    end
+
+    private
+
+      def property_names_for(klass)
+        klass.properties.keys
+      end
+
+      def store
+        @store ||= {}
+      end
+
+  end
+
   module ClassMethods
 
     ##
-    # Returns the list of smart properties that for this class. This 
-    # includes the properties that have been defined in the parent classes.
+    # Returns a class's smart properties. This includes the properties that
+    # have been defined in the parent classes.
     #
-    # @return [Array<Property>] The list of properties.
+    # @return [Hash<String, Property>] A map of property names to property instances.
     #
     def properties
-      @_smart_properties ||= begin        
+      @_smart_properties ||= begin
         parent = if self != SmartProperties
           (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
         end
-        
+
         parent ? parent.properties.dup : {}
       end
     end
@@ -189,13 +256,13 @@ module SmartProperties
     protected :property
 
   end
-  
+
   class << self
-    
+
     private
-    
+
       ##
-      # Extends the class, which this module is included in, with a property 
+      # Extends the class, which this module is included in, with a property
       # method to define properties.
       #
       # @param [Class] base the class this module is included in
@@ -203,17 +270,18 @@ module SmartProperties
       def included(base)
         base.extend(ClassMethods)
       end
-    
+
   end
-  
+
   ##
   # Implements a key-value enabled constructor that acts as default
   # constructor for all {SmartProperties}-enabled classes.
   #
   # @param [Hash] attrs the set of attributes that is used for initialization
   #
-  def initialize(attrs = {})
+  def initialize(attrs = {}, &block)
     attrs ||= {}
+    attrs = attrs.merge(AttributeBuilder.build_attributes_for(self.class, &block)) if block
 
     self.class.properties.each do |_, property|
       value = attrs.key?(property.name) ? attrs.delete(property.name) : property.default(self)
