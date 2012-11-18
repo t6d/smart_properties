@@ -4,3 +4,4 @@ source 'https://rubygems.org'
 gemspec
 
 gem "ruby_gntp"
+gem "rb-fsevent" if RUBY_PLATFORM =~ /darwin/
