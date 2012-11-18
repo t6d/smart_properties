@@ -472,4 +472,75 @@ describe SmartProperties do
 
   end
 
+  context 'when used to build a class that is then subclassed and later extended at runtime' do
+
+    let!(:klass) do
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+        c.send(:property, :title)
+      end
+    end
+
+    let!(:subklass) do
+      Class.new(klass).tap do |c|
+        c.send(:property, :body)
+      end
+    end
+
+    before do
+      klass.tap do |c|
+        c.send(:property, :subject)
+      end
+    end
+
+    context "the class's properties" do
+
+      subject { klass.properties }
+
+      it { should have_key(:title) }
+      it { should have_key(:subject) }
+
+    end
+
+    context "the subclass's properties" do
+
+      subject { subklass.properties }
+
+      it { should have_key(:title) }
+      it { should have_key(:body) }
+
+      pending '(dynamically defined property is not inherited)' do
+        it { should have_key(:subject) }
+      end
+
+    end
+
+    context 'the subclass' do
+
+      subject { subklass }
+
+      it "should be initializable using a block", :pending => true do
+        configuration_instructions = lambda do |s|
+          s.title = "Lorem Ipsum"
+          s.priority = :low
+          s.body = "Lorem ipsum dolor sit amet."
+        end
+
+        expect { subject.new(&configuration_instructions) }.to_not raise_error
+      end
+
+      it "should be initializable using a hash of attributes" do
+        attributes = {
+          :title => "Lorem Ipsum",
+          :priority => :low,
+          :body => "Lorem ipsum dolor sit amet."
+        }
+
+        expect { subject.new(attributes) }.to_not raise_error
+      end
+
+    end
+
+  end
+
 end

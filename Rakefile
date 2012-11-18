@@ -2,9 +2,12 @@
 require 'bundler/setup'
 require 'bundler/gem_tasks'
 
-require 'yard'
-YARD::Rake::YardocTask.new do |t|
-  t.files   = ['lib/**/*.rb', 'README.md']
+begin
+  require 'yard'
+  YARD::Rake::YardocTask.new do |t|
+    t.files   = ['lib/**/*.rb', 'README.md']
+  end
+rescue LoadError
 end
 
 require 'rspec/core/rake_task'

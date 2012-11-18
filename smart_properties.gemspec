@@ -18,10 +18,8 @@ Gem::Specification.new do |gem|
   gem.name          = "smart_properties"
   gem.require_paths = ["lib"]
   gem.version       = SmartProperties::VERSION
-  
+
   gem.add_development_dependency "rspec", "~> 2.0"
   gem.add_development_dependency "rake", "~> 0.8"
-  gem.add_development_dependency "yard", "~> 0.8"
-  gem.add_development_dependency "redcarpet", "~> 2.1"
   gem.add_development_dependency "guard-rspec", "~> 0.7"
 end
