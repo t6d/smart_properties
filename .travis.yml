@@ -5,6 +5,8 @@ rvm:
   - jruby-19mode
   - rbx-19mode
 
+bundler_args: --without documentation
+
 branches:
   only:
     - develop
