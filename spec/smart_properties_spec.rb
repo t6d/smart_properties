@@ -543,4 +543,51 @@ describe SmartProperties do
 
   end
 
+  context "when building a class that has a property which is not required and has a default" do
+
+    subject(:klass) do
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+        c.send(:property, :title, :default => 'Lorem Ipsum')
+      end
+    end
+
+    context 'instances of that class' do
+
+      context 'when created with a set of attributes that explicitly contains nil for the title' do
+
+        subject(:instance) { klass.new :title => nil }
+
+        it "should have no title" do
+          instance.title.should be_nil
+        end
+
+      end
+
+      context 'when created without any arguments' do
+
+        subject(:instance) { klass.new }
+
+        it "should have the default title" do
+          instance.title.should be == 'Lorem Ipsum'
+        end
+
+      end
+
+      context 'when created with an empty block' do
+
+        subject(:instance) { klass.new {} }
+
+        pending "(blocks currently override default settings)" do
+          it "should have the default title" do
+            instance.title.should be == 'Lorem Ipsum'
+          end
+        end
+
+      end
+
+    end
+
+  end
+
 end
