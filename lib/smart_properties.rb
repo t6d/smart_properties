@@ -121,7 +121,7 @@ module SmartProperties
 
     attr_reader :parent
 
-    def initialize(parent)
+    def initialize(parent = nil)
       @parent = parent
       @collection = {}
     end
@@ -143,7 +143,7 @@ module SmartProperties
       attr_accessor :collection
 
       def collection_with_parent_collection
-        parent.nil? ? collection : parent.properties.collection.merge(collection)
+        parent.nil? ? collection : parent.collection.merge(collection)
       end
 
   end
@@ -162,7 +162,7 @@ module SmartProperties
           (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
         end
 
-        PropertyCollection.new(parent)
+        parent.nil? ? PropertyCollection.new : PropertyCollection.new(parent.properties)
       end
     end
 
