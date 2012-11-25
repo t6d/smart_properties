@@ -62,8 +62,7 @@ describe SmartProperties do
       klass
     end
 
-    its(:properties) { should have(1).property }
-    its(:properties) { should have_key(:title) }
+    it { should have_smart_property(:title) }
 
     context "instances of this class" do
 
@@ -124,8 +123,7 @@ describe SmartProperties do
         Class.new(superklass)
       end
 
-      its(:properties) { should have(1).property }
-      its(:properties) { should have_key(:title) }
+      it { should have_smart_property(:title) }
 
       context "instances of this subclass" do
 
@@ -168,9 +166,8 @@ describe SmartProperties do
         end
       end
 
-      its(:properties) { should have(2).property }
-      its(:properties) { should have_key(:title) }
-      its(:properties) { should have_key(:text) }
+      it { should have_smart_property(:title) }
+      it { should have_smart_property(:text) }
 
       context "instances of this subclass" do
 
@@ -253,9 +250,8 @@ describe SmartProperties do
         end
       end
 
-      its(:properties) { should have(2).property }
-      its(:properties) { should have_key(:title) }
-      its(:properties) { should have_key(:type) }
+      it { should have_smart_property(:title) }
+      it { should have_smart_property(:type) }
 
       context "instances of this class" do
 
@@ -493,31 +489,25 @@ describe SmartProperties do
       end
     end
 
-    context "the class's properties" do
+    context "the class" do
 
-      subject { klass.properties }
+      subject { klass }
 
-      it { should have_key(:title) }
-      it { should have_key(:subject) }
-
-    end
-
-    context "the subclass's properties" do
-
-      subject { subklass.properties }
-
-      it { should have_key(:title) }
-      it { should have_key(:body) }
-
-      pending '(dynamically defined property is not inherited)' do
-        it { should have_key(:subject) }
-      end
+      it { should have_smart_property(:title) }
+      it { should have_smart_property(:subject) }
 
     end
 
     context 'the subclass' do
 
       subject { subklass }
+
+      it { should have_smart_property(:title) }
+      it { should have_smart_property(:body) }
+
+      pending '(dynamically defined property is not inherited)' do
+        it { should have_smart_property(:subject) }
+      end
 
       it "should be initializable using a block", :pending => true do
         configuration_instructions = lambda do |s|
