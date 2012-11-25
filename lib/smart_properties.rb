@@ -247,23 +247,21 @@ module SmartProperties
   #
   def initialize(attrs = {}, &block)
     attrs ||= {}
+    properties = self.class.properties.each.to_a
 
-    properties = self.class.properties
-
+    # Assign attributes or default values
     properties.each do |_, property|
       value = attrs.fetch(property.name, property.default(self))
-      send(:"#{property.name}=", value)
+      send(:"#{property.name}=", value) if value
     end
 
-    if block
-      block.call(self)
-      invalid_properties = properties.select { |_, property| property.required? && send(property.name).nil? }
-                                     .map(&:name)
-                                     .sort
+    # Exectue configuration block
+    block.call(self) if block
 
-      unless invalid_properties.empty?
-        raise ArgumentError, "#{self.class.name} requires the following properties to be set: #{invalid_properties.join(' ')}"
-      end
+    # Check presence of all required properties
+    faulty_properties = properties.select { |_, property| property.required? && send(property.name).nil? }
+    unless faulty_properties.empty?
+      raise ArgumentError, "#{self.class.name} requires the following properties to be set: #{faulty_properties.map { |_, property| property.name }.sort.join(' ')}"
     end
   end
 

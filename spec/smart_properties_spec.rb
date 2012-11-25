@@ -575,4 +575,49 @@ describe SmartProperties do
 
   end
 
+  context "when building a class that has a property which is required and has no default" do
+
+    subject(:klass) do
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+        c.send(:property, :title, :required => true)
+
+        def c.name; "Dummy"; end
+      end
+    end
+
+    context 'instances of that class' do
+
+      context 'when created with a set of attributes that explicitly contains nil for the title' do
+
+        subject(:instance) { klass.new :title => 'Lorem Ipsum' }
+
+        it "should have no title" do
+          instance.title.should be == 'Lorem Ipsum'
+        end
+
+      end
+
+      context 'when created with an block specifying that property' do
+
+        subject(:instance) { klass.new { |i| i.title = 'Lorem Ipsum' } }
+
+        it "should have the default title" do
+          instance.title.should be == 'Lorem Ipsum'
+        end
+
+      end
+
+      context "when created with no arguments" do
+
+        it "should raise an error stating that required properties are missing" do
+          expect { subject.new }.to raise_error(ArgumentError, "Dummy requires the following properties to be set: title")
+        end
+
+      end
+
+    end
+
+  end
+
 end
