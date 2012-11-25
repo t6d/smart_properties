@@ -62,8 +62,7 @@ describe SmartProperties do
       klass
     end
 
-    its(:properties) { should have(1).property }
-    its(:properties) { should have_key(:title) }
+    it { should have_smart_property(:title) }
 
     context "instances of this class" do
 
@@ -124,8 +123,7 @@ describe SmartProperties do
         Class.new(superklass)
       end
 
-      its(:properties) { should have(1).property }
-      its(:properties) { should have_key(:title) }
+      it { should have_smart_property(:title) }
 
       context "instances of this subclass" do
 
@@ -168,9 +166,8 @@ describe SmartProperties do
         end
       end
 
-      its(:properties) { should have(2).property }
-      its(:properties) { should have_key(:title) }
-      its(:properties) { should have_key(:text) }
+      it { should have_smart_property(:title) }
+      it { should have_smart_property(:text) }
 
       context "instances of this subclass" do
 
@@ -253,9 +250,8 @@ describe SmartProperties do
         end
       end
 
-      its(:properties) { should have(2).property }
-      its(:properties) { should have_key(:title) }
-      its(:properties) { should have_key(:type) }
+      it { should have_smart_property(:title) }
+      it { should have_smart_property(:type) }
 
       context "instances of this class" do
 
@@ -489,29 +485,16 @@ describe SmartProperties do
 
     before do
       klass.tap do |c|
-        c.send(:property, :subject)
+        c.send(:property, :priority)
       end
     end
 
-    context "the class's properties" do
+    context "the class" do
 
-      subject { klass.properties }
+      subject { klass }
 
-      it { should have_key(:title) }
-      it { should have_key(:subject) }
-
-    end
-
-    context "the subclass's properties" do
-
-      subject { subklass.properties }
-
-      it { should have_key(:title) }
-      it { should have_key(:body) }
-
-      pending '(dynamically defined property is not inherited)' do
-        it { should have_key(:subject) }
-      end
+      it { should have_smart_property(:title) }
+      it { should have_smart_property(:priority) }
 
     end
 
@@ -519,7 +502,11 @@ describe SmartProperties do
 
       subject { subklass }
 
-      it "should be initializable using a block", :pending => true do
+      it { should have_smart_property(:title) }
+      it { should have_smart_property(:body) }
+      it { should have_smart_property(:priority) }
+
+      it "should be initializable using a block" do
         configuration_instructions = lambda do |s|
           s.title = "Lorem Ipsum"
           s.priority = :low
@@ -537,6 +524,96 @@ describe SmartProperties do
         }
 
         expect { subject.new(attributes) }.to_not raise_error
+      end
+
+    end
+
+  end
+
+  context "when building a class that has a property which is not required and has a default" do
+
+    subject(:klass) do
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+        c.send(:property, :title, :default => 'Lorem Ipsum')
+      end
+    end
+
+    context 'instances of that class' do
+
+      context 'when created with a set of attributes that explicitly contains nil for the title' do
+
+        subject(:instance) { klass.new :title => nil }
+
+        it "should have no title" do
+          instance.title.should be_nil
+        end
+
+      end
+
+      context 'when created without any arguments' do
+
+        subject(:instance) { klass.new }
+
+        it "should have the default title" do
+          instance.title.should be == 'Lorem Ipsum'
+        end
+
+      end
+
+      context 'when created with an empty block' do
+
+        subject(:instance) { klass.new {} }
+
+        it "should have the default title" do
+          instance.title.should be == 'Lorem Ipsum'
+        end
+
+      end
+
+    end
+
+  end
+
+  context "when building a class that has a property which is required and has no default" do
+
+    subject(:klass) do
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+        c.send(:property, :title, :required => true)
+
+        def c.name; "Dummy"; end
+      end
+    end
+
+    context 'instances of that class' do
+
+      context 'when created with a set of attributes that explicitly contains nil for the title' do
+
+        subject(:instance) { klass.new :title => 'Lorem Ipsum' }
+
+        it "should have no title" do
+          instance.title.should be == 'Lorem Ipsum'
+        end
+
+      end
+
+      context 'when created with an block specifying that property' do
+
+        subject(:instance) { klass.new { |i| i.title = 'Lorem Ipsum' } }
+
+        it "should have the default title" do
+          instance.title.should be == 'Lorem Ipsum'
+        end
+
+      end
+
+      context "when created with no arguments" do
+
+        it "should raise an error stating that required properties are missing" do
+          expect { subject.new }.to raise_error(ArgumentError, "Dummy requires the following properties to be set: title")
+        end
+
       end
 
     end

@@ -115,69 +115,35 @@ module SmartProperties
 
   end
 
-  ##
-  # {AttributeBuilder} is a singleton object that builds and keeps track of
-  # annonymous class that can be used to build attribute hashes for smart
-  # property enabled classes.
-  #
-  class << (AttributeBuilder = Object.new)
+  class PropertyCollection
 
-    ##
-    # Returns an attribute builder for a given klass. If the attribute builder
-    # does not exist yet, it is created.
-    #
-    # @return [Class]
-    #
-    def [](klass)
-      store.fetch(klass) { new(property_names_for(klass)) }
+    include Enumerable
+
+    attr_reader :parent
+
+    def initialize(parent = nil)
+      @parent = parent
+      @collection = {}
     end
 
-    ##
-    # Constructs a hash of attributes for a smart property enabled class using
-    # the instructions provided by the block.
-    #
-    # @return [Hash<String, Object>] Hash of attributes
-    #
-    def build_attributes_for(klass, &block)
-      block.nil? ? {} : self[klass].new(&block).to_hash
+    def []=(name, value)
+      collection[name] = value
     end
 
-    ##
-    # Returns the name of this singleton object.
-    #
-    # @return String
-    #
-    def inspect
-      "AttributeBuilder"
-    end
-    alias :to_s :inspect
-
-    ##
-    # Creates a new anonymous class that can act as an attribute builder.
-    #
-    # @return [Class]
-    #
-    def new(fields)
-      Struct.new(*fields) do
-        def initialize(*args, &block)
-          super
-          yield(self) if block
-        end
-
-        def to_hash
-          Hash[each_pair.to_a]
-        end
-      end
+    def [](name)
+      collection_with_parent_collection[name]
     end
 
-    private
+    def each(&block)
+      collection_with_parent_collection.each(&block)
+    end
 
-      def property_names_for(klass)
-        klass.properties.keys
-      end
+    protected
 
-      def store
-        @store ||= {}
+      attr_accessor :collection
+
+      def collection_with_parent_collection
+        parent.nil? ? collection : parent.collection.merge(collection)
       end
 
   end
@@ -196,7 +162,7 @@ module SmartProperties
           (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
         end
 
-        parent ? parent.properties.dup : {}
+        parent.nil? ? PropertyCollection.new : PropertyCollection.new(parent.properties)
       end
     end
 
@@ -281,11 +247,21 @@ module SmartProperties
   #
   def initialize(attrs = {}, &block)
     attrs ||= {}
-    attrs = attrs.merge(AttributeBuilder.build_attributes_for(self.class, &block)) if block
+    properties = self.class.properties.each.to_a
 
-    self.class.properties.each do |_, property|
-      value = attrs.key?(property.name) ? attrs.delete(property.name) : property.default(self)
-      send(:"#{property.name}=", value)
+    # Assign attributes or default values
+    properties.each do |_, property|
+      value = attrs.fetch(property.name, property.default(self))
+      send(:"#{property.name}=", value) if value
+    end
+
+    # Exectue configuration block
+    block.call(self) if block
+
+    # Check presence of all required properties
+    faulty_properties = properties.select { |_, property| property.required? && send(property.name).nil? }
+    unless faulty_properties.empty?
+      raise ArgumentError, "#{self.class.name} requires the following properties to be set: #{faulty_properties.map { |_, property| property.name }.sort.join(' ')}"
     end
   end
 
