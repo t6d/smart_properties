@@ -578,10 +578,8 @@ describe SmartProperties do
 
         subject(:instance) { klass.new {} }
 
-        pending "(blocks currently override default settings)" do
-          it "should have the default title" do
-            instance.title.should be == 'Lorem Ipsum'
-          end
+        it "should have the default title" do
+          instance.title.should be == 'Lorem Ipsum'
         end
 
       end
