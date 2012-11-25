@@ -485,7 +485,7 @@ describe SmartProperties do
 
     before do
       klass.tap do |c|
-        c.send(:property, :subject)
+        c.send(:property, :priority)
       end
     end
 
@@ -494,7 +494,7 @@ describe SmartProperties do
       subject { klass }
 
       it { should have_smart_property(:title) }
-      it { should have_smart_property(:subject) }
+      it { should have_smart_property(:priority) }
 
     end
 
@@ -504,12 +504,9 @@ describe SmartProperties do
 
       it { should have_smart_property(:title) }
       it { should have_smart_property(:body) }
+      it { should have_smart_property(:priority) }
 
-      pending '(dynamically defined property is not inherited)' do
-        it { should have_smart_property(:subject) }
-      end
-
-      it "should be initializable using a block", :pending => true do
+      it "should be initializable using a block" do
         configuration_instructions = lambda do |s|
           s.title = "Lorem Ipsum"
           s.priority = :low

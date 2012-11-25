@@ -115,6 +115,39 @@ module SmartProperties
 
   end
 
+  class PropertyCollection
+
+    include Enumerable
+
+    attr_reader :parent
+
+    def initialize(parent)
+      @parent = parent
+      @collection = {}
+    end
+
+    def []=(name, value)
+      collection[name] = value
+    end
+
+    def [](name)
+      collection_with_parent_collection[name]
+    end
+
+    def each(&block)
+      collection_with_parent_collection.each(&block)
+    end
+
+    protected
+
+      attr_accessor :collection
+
+      def collection_with_parent_collection
+        parent.nil? ? collection : parent.properties.collection.merge(collection)
+      end
+
+  end
+
   module ClassMethods
 
     ##
@@ -129,7 +162,7 @@ module SmartProperties
           (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
         end
 
-        parent ? parent.properties.dup : {}
+        PropertyCollection.new(parent)
       end
     end
 
