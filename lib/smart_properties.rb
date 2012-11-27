@@ -252,7 +252,7 @@ module SmartProperties
     # Assign attributes or default values
     properties.each do |_, property|
       value = attrs.fetch(property.name, property.default(self))
-      send(:"#{property.name}=", value) if value
+      send(:"#{property.name}=", value) unless value.nil?
     end
 
     # Exectue configuration block
