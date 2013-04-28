@@ -1,4 +1,4 @@
-# SmartProperties
+# Smartproperties
 
 Ruby accessors on steroids.
 
@@ -45,32 +45,45 @@ The example below shows how to implement a class called `Message` which has
 three properties: `subject`, `body`, and `priority`. The two properties,
 `subject` and `priority`, are required whereas `body` is optional.
 Furthermore, all properties use input conversion. The `priority` property also
-uses validation and has a default value.
+uses validation and has a default value so if it is not set during initialization
+it will be set according to the default value.
 
-    class Message
-      property :subject,  :converts => :to_s
-      
-      property :body,     :converts => :to_s
-      
-      property :priority, :converts => :to_sym, 
-                          :accepts  => [:low, :normal, :high],
-                          :default  => :normal
-                          :required => true
-    end
-    
+```ruby
+require 'rubygems'
+require 'smart_properties'
+
+class Message
+  include SmartProperties
+
+  property :subject,  :converts => :to_s,
+                      :required => true
+
+  property :body,     :converts => :to_s
+
+  property :priority, :converts => :to_sym,
+                      :accepts  => [:low, :normal, :high],
+                      :default  => :normal,
+                      :required => true
+end
+```
+
 Creating an instance of this class without specifying any attributes will
 result in an `ArgumentError` telling you to specify the required property
 `subject`.
 
-    Message.new # => raises ArgumentError, "Message requires the property subject to be set"
+```ruby
+Message.new # => raises ArgumentError, "Message requires the property subject to be set"
+```
 
 Providing the constructor with a title but with an invalid value for the
 property `priority` will also result in an `ArgumentError` telling you to
 provide a proper value for the property `priority`.
 
-    m = Message.new :subject => 'Lorem ipsum'
-    m.priority # => :normal
-    m.priority = :urgent # => raises ArgumentError, Message does not accept :urgent as value for the property priority
+```ruby
+m = Message.new :subject => 'Lorem ipsum'
+m.priority # => :normal
+m.priority = :urgent # => raises ArgumentError, Message does not accept :urgent as value for the property priority
+```
 
 Next, we discuss the various configuration options `SmartProperties` provide.
 
@@ -89,9 +102,11 @@ the result of this method call as value instead. The example below shows how
 to implement a property that automatically converts all given input to a
 `String` by calling `#to_s` on the object provided as input.
 
-    class Article
-      property :title, :converts => :to_s
-    end
+```ruby
+class Article
+  property :title, :converts => :to_s
+end
+```
 
 If you need more fine-grained control, you can use a lambda statement to
 specify how the conversion should be done. The statement will be evaluated in
@@ -99,9 +114,11 @@ the context of the class defining the property and takes the given value as
 input. The example below shows how to implement a property that automatically
 converts all given input to a slug representation.
 
-    class Article
-      property :slug, :converts => lambda { |slug| slug.downcase.gsub(/\s+/, '-').gsub(/\W/, '') }
-    end
+```ruby
+class Article
+  property :slug, :converts => lambda { |slug| slug.downcase.gsub(/\s+/, '-').gsub(/\W/, '') }
+end
+```
 
 #### Input validation
 
@@ -111,17 +128,21 @@ automatic validation whenever the setter for a certain property is called. The
 example below shows how to implement a property which only accepts instances
 of type `String` as input.
 
-    class Article
-      property :title, :accepts => String
-    end
+```ruby
+class Article
+  property :title, :accepts => String
+end
+```
 
 Instead of using a class, you can also use a list of permitted values. The
 example below shows how to implement a property that only accepts `true` or
 `false` as values.
 
-    class Article
-      property :published, :accepts => [true, false]
-    end
+```ruby
+class Article
+  property :published, :accepts => [true, false]
+end
+```
 
 You can also use a `lambda` statement for input validation if a more complex
 validation procedure is required. The `lambda` statement is evaluated in the
@@ -129,9 +150,11 @@ context of the class that defines the property and receives the given value as
 input. The example below shows how to implement a property called title that
 only accepts values which match the given regular expression.
 
-    class Article
-      property :title, :accepts => lambda { |title| /^Lorem \w+$/ =~ title }
-    end
+```ruby
+class Article
+  property :title, :accepts => lambda { |title| /^Lorem \w+$/ =~ title }
+end
+```
 
 #### Default values
 
@@ -140,9 +163,11 @@ configuration parameter to configure a default value for a certain property.
 The example below demonstrates how to implement a property that has 42 as
 default value.
 
-    class Article
-      property :id, :default => 42
-    end
+```ruby
+class Article
+  property :id, :default => 42
+end
+```
 
 #### Presence checking
 
@@ -151,9 +176,11 @@ To ensure that a property is always set set and never `nil`, you can use the
 the setter of a property to not accept nil as input. The example below shows
 how to implement a property that may not be `nil`.
 
-    class Article
-      property :title, :required => true
-    end
+```ruby
+class Article
+  property :title, :required => true
+end
+```
 
 ## Contributing
 
