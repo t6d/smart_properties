@@ -6,7 +6,9 @@ Ruby accessors on steroids.
 
 Add this line to your application's Gemfile:
 
-    gem 'smart_properties'
+```ruby
+gem 'smart_properties'
+```
 
 And then execute:
 
