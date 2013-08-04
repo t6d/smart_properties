@@ -6,15 +6,21 @@ Ruby accessors on steroids.
 
 Add this line to your application's Gemfile:
 
-    gem 'smart_properties'
+```ruby
+gem 'smart_properties'
+```
 
 And then execute:
 
-    $ bundle
+```plain
+$ bundle
+```
 
 Or install it yourself as:
 
-    $ gem install smart_properties
+```plain
+$ gem install smart_properties
+```
 
 ## Usage
 
@@ -171,7 +177,7 @@ end
 
 #### Presence checking
 
-To ensure that a property is always set set and never `nil`, you can use the
+To ensure that a property is always set and never `nil`, you can use the
 `:required` configuration parameter. If present, this parameter will instruct
 the setter of a property to not accept nil as input. The example below shows
 how to implement a property that may not be `nil`.
@@ -179,6 +185,18 @@ how to implement a property that may not be `nil`.
 ```ruby
 class Article
   property :title, :required => true
+end
+```
+
+The decision whether or not a property is required can also be delayed and
+evaluated at runtime by providing a block instead of a boolean value. The
+example below shows how to implement a class that has two properties, `name`
+and `anonoymous`. The `name` is only required if `anonymous` is set to `false`.
+
+```ruby
+class Person
+  property :name, required: lambda { not anonymous }
+  property :anonymous, required: true, default: true, accepts: [true, false]
 end
 ```
 
