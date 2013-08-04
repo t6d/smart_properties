@@ -94,7 +94,7 @@ module SmartProperties
         raise ArgumentError, "#{scope.class.name} does not accept #{value.inspect} as value for the property #{self.name}"
       end
 
-      @value = value
+      value
     end
 
     def define(klass)
