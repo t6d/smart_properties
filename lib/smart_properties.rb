@@ -22,7 +22,7 @@
 #
 module SmartProperties
 
-  VERSION = "1.2.3"
+  VERSION = "1.3.0"
 
   class Property
 
@@ -37,19 +37,15 @@ module SmartProperties
       @default   = attrs.delete(:default)
       @converter = attrs.delete(:converts)
       @accepter  = attrs.delete(:accepts)
-      @required  = !!attrs.delete(:required)
+      @required  = attrs.delete(:required)
 
       unless attrs.empty?
         raise ArgumentError, "SmartProperties do not support the following configuration options: #{attrs.keys.map { |m| m.to_s }.sort.join(', ')}."
       end
     end
 
-    def required=(value)
-      @required = !!value
-    end
-
-    def required?
-      @required
+    def required?(scope)
+      @required.kind_of?(Proc) ? scope.instance_exec(&@required) : !!@required
     end
 
     def convert(value, scope)
@@ -84,7 +80,7 @@ module SmartProperties
     end
 
     def prepare(value, scope)
-      if required? && value.nil?
+      if required?(scope) && value.nil?
         raise ArgumentError, "#{scope.class.name} requires the property #{self.name} to be set"
       end
 
@@ -94,7 +90,7 @@ module SmartProperties
         raise ArgumentError, "#{scope.class.name} does not accept #{value.inspect} as value for the property #{self.name}"
       end
 
-      @value = value
+      value
     end
 
     def define(klass)
@@ -259,7 +255,7 @@ module SmartProperties
     block.call(self) if block
 
     # Check presence of all required properties
-    faulty_properties = properties.select { |_, property| property.required? && send(property.name).nil? }
+    faulty_properties = properties.select { |_, property| property.required?(self) && send(property.name).nil? }
     unless faulty_properties.empty?
       raise ArgumentError, "#{self.class.name} requires the following properties to be set: #{faulty_properties.map { |_, property| property.name }.sort.join(' ')}"
     end

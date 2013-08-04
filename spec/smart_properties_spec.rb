@@ -11,7 +11,7 @@ describe SmartProperties do
     end
 
     it "should add a .property method" do
-      subject.should respond_to(:property)
+      subject.respond_to?(:property, true).should be_true
     end
 
     context "and defining a property with invalid configuration options" do
@@ -616,6 +616,39 @@ describe SmartProperties do
 
       end
 
+    end
+
+  end
+
+  context "when building a class that has a property which is required depending on the value of another property" do
+
+    subject(:klass) do
+      described_class = self.described_class
+
+      Class.new do
+        include described_class
+        property :name, :required => lambda { not anonymous }
+        property :anonymous, accepts: [true, false], default: true
+        def self.name; "Dummy"; end
+      end
+    end
+
+    context "when created with no arguments" do
+      it "should not raise an error" do
+        expect { klass.new }.to_not raise_error
+      end
+    end
+
+    context "when created with no name and anonymous being set to false" do
+      it "should raise an error indicating that a required property was not specified" do
+        expect { klass.new anonymous: false }.to raise_error(ArgumentError, "Dummy requires the following properties to be set: name")
+      end
+    end
+
+    context "when created with a name and anonymous being set to false" do
+      it "should not raise an error" do
+        expect { klass.new name: "John Doe", anonymous: false }.to_not raise_error
+      end
     end
 
   end
