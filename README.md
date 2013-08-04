@@ -175,6 +175,9 @@ class Article
 end
 ```
 
+Default values can also be specified using blocks which are evaluated at
+runtime.
+
 #### Presence checking
 
 To ensure that a property is always set and never `nil`, you can use the
