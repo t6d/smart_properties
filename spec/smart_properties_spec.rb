@@ -11,7 +11,7 @@ describe SmartProperties do
     end
 
     it "should add a .property method" do
-      subject.should respond_to(:property)
+      subject.respond_to?(:property, true).should be_true
     end
 
     context "and defining a property with invalid configuration options" do
