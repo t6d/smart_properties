@@ -285,6 +285,29 @@ describe SmartProperties do
     end
   end
 
+  context "when used to build a class that has a property called :title that can either be a String or a Symbol" do
+    subject(:klass) do
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+        c.instance_eval do
+          property :title, accepts: [String, Symbol]
+        end
+      end
+    end
+
+    context "intance of this class" do
+      subject(:instance) { klass.new }
+
+      it "should accept a String as title" do
+        expect { subject.title = "Test" }.to_not raise_error
+      end
+
+      it "should accept a Symbol as title" do
+        expect { subject.title = :test }.to_not raise_error
+      end
+    end
+  end
+
   context 'when used to build a class that has a property called :license_plate which uses a lambda statement for accpetance checking' do
     subject(:klass) do
       Class.new.tap do |c|

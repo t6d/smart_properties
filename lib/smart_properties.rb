@@ -62,7 +62,7 @@ module SmartProperties
       return true unless accepter
 
       if accepter.kind_of?(Enumerable)
-        accepter.include?(value)
+        accepter.any? { |accepter| accepter === value }
       elsif !accepter.kind_of?(Proc)
         accepter === value
       else
