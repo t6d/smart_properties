@@ -61,12 +61,10 @@ module SmartProperties
       return true unless value
       return true unless accepter
 
-      if accepter.kind_of?(Enumerable)
-        accepter.any? { |accepter| accepter === value }
-      elsif !accepter.kind_of?(Proc)
-        accepter === value
-      else
+      if accepter.respond_to?(:to_proc)
         !!scope.instance_exec(value, &accepter)
+      else
+        Array(accepter).any? { |accepter| accepter === value }
       end
     end
 
