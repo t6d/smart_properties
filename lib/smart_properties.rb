@@ -22,7 +22,7 @@
 #
 module SmartProperties
 
-  VERSION = "1.3.0"
+  VERSION = "1.4.0"
 
   class Property
 
@@ -50,16 +50,7 @@ module SmartProperties
 
     def convert(value, scope)
       return value unless converter
-
-      if converter.respond_to?(:call)
-        scope.instance_exec(value, &converter)
-      else
-        begin
-          value.send(:"#{converter}")
-        rescue NoMethodError
-          raise ArgumentError, "#{value.class.name} does not respond to ##{converter}"
-        end
-      end
+      scope.instance_exec(value, &converter)
     end
 
     def default(scope)
@@ -70,12 +61,10 @@ module SmartProperties
       return true unless value
       return true unless accepter
 
-      if accepter.kind_of?(Enumerable)
-        accepter.include?(value)
-      elsif !accepter.kind_of?(Proc)
-        accepter === value
-      else
+      if accepter.respond_to?(:to_proc)
         !!scope.instance_exec(value, &accepter)
+      else
+        Array(accepter).any? { |accepter| accepter === value }
       end
     end
 
