@@ -81,7 +81,7 @@ describe SmartProperties do
       end
 
       it "should not allow to set objects as title that do not respond to #to_title" do
-        expect { instance.title = Object.new }.to raise_error(ArgumentError, "Object does not respond to #to_title")
+        expect { instance.title = Object.new }.to raise_error(NoMethodError, /undefined method `to_title'/)
       end
 
       it "should not influence other instances that have been initialized with different attributes" do
@@ -215,6 +215,32 @@ describe SmartProperties do
         c.send(:include, described_class)
         c.instance_eval do
           property :title, :converts => lambda { |t| "<title>#{t.to_s}</title>"}
+        end
+      end
+    end
+
+    context "instances of this class" do
+      subject(:instance) { klass.new }
+
+      it "should convert the property title as specified the lambda statement" do
+        instance.title = "Lorem ipsum"
+        instance.title.should be == "<title>Lorem ipsum</title>"
+      end
+    end
+  end
+
+  context "when used to build a class that has a property called :title that uses an object that responds to #to_proc for conversion" do
+    subject(:klass) do
+      converter = Object.new.tap do |o|
+        def o.to_proc
+          lambda { |t| "<title>#{t.to_s}</title>"}
+        end
+      end
+
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+        c.instance_eval do
+          property :title, :converts => converter
         end
       end
     end

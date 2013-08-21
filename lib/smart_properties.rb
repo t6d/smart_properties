@@ -50,16 +50,7 @@ module SmartProperties
 
     def convert(value, scope)
       return value unless converter
-
-      if converter.respond_to?(:call)
-        scope.instance_exec(value, &converter)
-      else
-        begin
-          value.send(:"#{converter}")
-        rescue NoMethodError
-          raise ArgumentError, "#{value.class.name} does not respond to ##{converter}"
-        end
-      end
+      scope.instance_exec(value, &converter)
     end
 
     def default(scope)
