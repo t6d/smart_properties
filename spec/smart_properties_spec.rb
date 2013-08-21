@@ -137,7 +137,7 @@ describe SmartProperties do
       context "instances of this subclass that have been intialized from a set of attributes" do
 
         subject do
-          subklass.new :title => stub(:to_title => 'Message')
+          subklass.new :title => double(:to_title => 'Message')
         end
 
         it "should have the correct title" do
@@ -190,7 +190,7 @@ describe SmartProperties do
         context "when initialized with a set of attributes" do
 
           subject do
-            subklass.new :title => stub(:to_title => 'Message'), :text => "Hello"
+            subklass.new :title => double(:to_title => 'Message'), :text => "Hello"
           end
 
           it "should have the correct title" do
@@ -207,7 +207,7 @@ describe SmartProperties do
 
           subject do
             subklass.new do |c|
-              c.title = stub(:to_title => 'Message')
+              c.title = double(:to_title => 'Message')
               c.text = "Hello"
             end
           end
