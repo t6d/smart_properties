@@ -209,7 +209,7 @@ describe SmartProperties do
     end
   end
 
-  context "when used to build a class that has a property called :title which a lambda statement for conversion" do
+  context "when used to build a class that has a property called :title that uses a lambda statement for conversion" do
     subject(:klass) do
       Class.new.tap do |c|
         c.send(:include, described_class)
