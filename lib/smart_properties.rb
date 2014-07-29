@@ -24,6 +24,10 @@ module SmartProperties
 
   VERSION = "1.4.0"
 
+  class ArgumentError < ::ArgumentError
+    attr_accessor :errors
+  end
+
   class Property
 
     attr_reader :name
@@ -40,7 +44,7 @@ module SmartProperties
       @required  = attrs.delete(:required)
 
       unless attrs.empty?
-        raise ArgumentError, "SmartProperties do not support the following configuration options: #{attrs.keys.map { |m| m.to_s }.sort.join(', ')}."
+        raise SmartProperties::ArgumentError, "SmartProperties do not support the following configuration options: #{attrs.keys.map { |m| m.to_s }.sort.join(', ')}."
       end
     end
 
@@ -70,13 +74,17 @@ module SmartProperties
 
     def prepare(value, scope)
       if required?(scope) && value.nil?
-        raise ArgumentError, "#{scope.class.name} requires the property #{self.name} to be set"
+        error = SmartProperties::ArgumentError.new "#{scope.class.name} requires the property #{self.name} to be set"
+        error.errors = Hash[self.name, "must be set"]
+        raise error
       end
 
       value = convert(value, scope) unless value.nil?
 
       unless accepts?(value, scope)
-        raise ArgumentError, "#{scope.class.name} does not accept #{value.inspect} as value for the property #{self.name}"
+        error = SmartProperties::ArgumentError.new "#{scope.class.name} does not accept #{value.inspect} as value for the property #{self.name}"
+        error.errors = Hash[self.name, "does not accept #{value.inspect} as value"]
+        raise error
       end
 
       value
@@ -246,7 +254,9 @@ module SmartProperties
     # Check presence of all required properties
     faulty_properties = properties.select { |_, property| property.required?(self) && send(property.name).nil? }
     unless faulty_properties.empty?
-      raise ArgumentError, "#{self.class.name} requires the following properties to be set: #{faulty_properties.map { |_, property| property.name }.sort.join(' ')}"
+      error = SmartProperties::ArgumentError.new "#{self.class.name} requires the following properties to be set: #{faulty_properties.map { |_, property| property.name }.sort.join(' ')}"
+      error.errors = faulty_properties.each_with_object({}){|property,hash| hash[property.first] = "must be set" }
+      raise error
     end
   end
 
