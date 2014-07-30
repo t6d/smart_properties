@@ -5,8 +5,3 @@ rvm:
   - rbx-18mode
 
 bundler_args: --without documentation
-
-branches:
-  only:
-    - develop
-    - master
