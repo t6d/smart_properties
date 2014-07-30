@@ -67,7 +67,7 @@ describe SmartProperties do
       it { is_expected.to respond_to(:title) }
       it { is_expected.to respond_to(:title=) }
 
-      it "should have 'chucky' as default value for title" do
+      it "should have 'chunky' as default value for title" do
         expect(instance.title).to eq('chunky')
       end
 
