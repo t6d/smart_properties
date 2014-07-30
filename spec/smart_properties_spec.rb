@@ -4,8 +4,8 @@ describe SmartProperties do
 
   describe SmartProperties::ArgumentError do
     subject(:instance) { SmartProperties::ArgumentError.new }
-    it { should respond_to(:errors) }
-    it { should respond_to(:errors=) }
+    it { is_expected.to respond_to(:errors) }
+    it { is_expected.to respond_to(:errors=) }
   end
 
   context "when extending an other class" do
@@ -84,7 +84,7 @@ describe SmartProperties do
 
       it "should not allow to set nil as title" do
         expect { instance.title = nil }.to raise_error(SmartProperties::ArgumentError, "TestDummy requires the property title to be set") {|error|
-          error.errors[:title].should == 'must be set'
+          expect(error.errors[:title]).to eq('must be set')
         }
       end
 
@@ -289,7 +289,7 @@ describe SmartProperties do
 
       it "should not allow to set :maybe as value for visible" do
         expect { instance.visible = :maybe }.to raise_error(SmartProperties::ArgumentError, "TestDummy does not accept :maybe as value for the property visible") {|error|
-          error.errors[:visible].should == 'does not accept :maybe as value'
+          expect(error.errors[:visible]).to eq('does not accept :maybe as value')
         }
       end
     end
@@ -336,7 +336,7 @@ describe SmartProperties do
 
       it 'should not a accept "invalid" as value for license_plate' do
         expect { instance.license_plate = "invalid" }.to raise_error(SmartProperties::ArgumentError, 'TestDummy does not accept "invalid" as value for the property license_plate') {|error|
-          error.errors[:license_plate].should == 'does not accept "invalid" as value'
+          expect(error.errors[:license_plate]).to eq('does not accept "invalid" as value')
         }
       end
 
@@ -525,7 +525,7 @@ describe SmartProperties do
       context "when created with no arguments" do
         it "should raise an error stating that required properties are missing" do
           expect { klass.new }.to raise_error(SmartProperties::ArgumentError, "Dummy requires the following properties to be set: title") {|error|
-            error.errors[:title].should == 'must be set'
+            expect(error.errors[:title]).to eq('must be set')
           }
         end
       end
@@ -553,7 +553,7 @@ describe SmartProperties do
     context "when created with no name and anonymous being set to false" do
       it "should raise an error indicating that a required property was not specified" do
         expect { klass.new anonymous: false }.to raise_error(SmartProperties::ArgumentError, "Dummy requires the following properties to be set: name") {|error|
-          error.errors[:name].should == "must be set"
+          expect(error.errors[:name]).to eq("must be set")
         }
       end
     end
