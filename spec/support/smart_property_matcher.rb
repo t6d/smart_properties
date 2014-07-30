@@ -18,9 +18,10 @@ module Matchers
       return "expected #{instance.class.name} to be smart property enabled"
     end
 
-    def negative_failure_message
+    def failure_message_when_negated
       "expected #{instance.class.name} to not have a property named #{property_name}"
     end
+    alias negative_failure_message failure_message_when_negated
 
     private
 
