@@ -10,7 +10,7 @@ describe SmartProperties do
     end
 
     it "should add a .property method" do
-      klass.respond_to?(:property, true).should be_true
+      expect(klass.respond_to?(:property, true)).to be_truthy
     end
 
     context "and defining a property with invalid configuration options" do
@@ -59,21 +59,21 @@ describe SmartProperties do
 
     let(:superklass) { klass }
 
-    it { should have_smart_property(:title) }
+    it { is_expected.to have_smart_property(:title) }
 
     context "instances of this class" do
       subject(:instance) { klass.new }
 
-      it { should respond_to(:title) }
-      it { should respond_to(:title=) }
+      it { is_expected.to respond_to(:title) }
+      it { is_expected.to respond_to(:title=) }
 
       it "should have 'chucky' as default value for title" do
-        instance.title.should be == 'chunky'
+        expect(instance.title).to eq('chunky')
       end
 
       it "should convert all values that are assigned to title into strings" do
         instance.title = double(:to_title => 'bacon')
-        instance.title.should be == 'bacon'
+        expect(instance.title).to eq('bacon')
       end
 
       it "should not allow to set nil as title" do
@@ -87,8 +87,8 @@ describe SmartProperties do
       it "should not influence other instances that have been initialized with different attributes" do
         other_instance = klass.new :title => double(:to_title => 'Lorem ipsum')
 
-        instance.title.should be == 'chunky'
-        other_instance.title.should be == 'Lorem ipsum'
+        expect(instance.title).to eq('chunky')
+        expect(other_instance.title).to eq('Lorem ipsum')
       end
 
       context "when initialized with a block" do
@@ -99,7 +99,7 @@ describe SmartProperties do
         end
 
         it "should have the title specified in the block" do
-          instance.title.should be == 'bacon'
+          expect(instance.title).to eq('bacon')
         end
       end
     end
@@ -107,20 +107,20 @@ describe SmartProperties do
     context "when subclassed" do
       subject(:subklass) { Class.new(superklass) }
 
-      it { should have_smart_property(:title) }
+      it { is_expected.to have_smart_property(:title) }
 
       context "instances of this subclass" do
         subject(:instance) { subklass.new }
 
-        it { should respond_to(:title) }
-        it { should respond_to(:title=) }
+        it { is_expected.to respond_to(:title) }
+        it { is_expected.to respond_to(:title=) }
       end
 
       context "instances of this subclass that have been intialized from a set of attributes" do
         subject(:instance) { subklass.new :title => double(:to_title => 'Message') }
 
         it "should have the correct title" do
-          instance.title.should be == 'Message'
+          expect(instance.title).to eq('Message')
         end
       end
     end
@@ -134,31 +134,31 @@ describe SmartProperties do
         end
       end
 
-      it { should have_smart_property(:title) }
-      it { should have_smart_property(:text) }
+      it { is_expected.to have_smart_property(:title) }
+      it { is_expected.to have_smart_property(:text) }
 
       context "instances of this subclass" do
         subject(:instance) { subklass.new }
 
-        it { should respond_to(:title) }
-        it { should respond_to(:title=) }
-        it { should respond_to(:text) }
-        it { should respond_to(:text=) }
+        it { is_expected.to respond_to(:title) }
+        it { is_expected.to respond_to(:title=) }
+        it { is_expected.to respond_to(:text) }
+        it { is_expected.to respond_to(:text=) }
       end
 
       context "instances of the super class" do
         subject(:instance) { superklass.new }
 
-        it { should_not respond_to(:text) }
-        it { should_not respond_to(:text=) }
+        it { is_expected.not_to respond_to(:text) }
+        it { is_expected.not_to respond_to(:text=) }
       end
 
       context "instances of this subclass" do
         context "when initialized with a set of attributes" do
           subject(:instance) { subklass.new :title => double(:to_title => 'Message'), :text => "Hello" }
 
-          it("should have the correct title") { instance.title.should be == 'Message' }
-          it("should have the correct text") { instance.text.should be == 'Hello' }
+          it("should have the correct title") { expect(instance.title).to eq('Message') }
+          it("should have the correct text") { expect(instance.text).to eq('Hello') }
         end
 
         context "when initialized with a block" do
@@ -169,8 +169,8 @@ describe SmartProperties do
             end
           end
 
-          it("should have the correct title") { instance.title.should be == 'Message' }
-          it("should have the correct text") { instance.text.should be == 'Hello' }
+          it("should have the correct title") { expect(instance.title).to eq('Message') }
+          it("should have the correct text") { expect(instance.text).to eq('Hello') }
         end
       end
     end
@@ -184,14 +184,14 @@ describe SmartProperties do
         end
       end
 
-      it { should have_smart_property(:title) }
-      it { should have_smart_property(:type) }
+      it { is_expected.to have_smart_property(:title) }
+      it { is_expected.to have_smart_property(:type) }
 
       context "instances of this class" do
         subject(:instance) { superklass.new :title => double(:to_title => 'Lorem ipsum') }
 
-        it { should respond_to(:type)  }
-        it { should respond_to(:type=) }
+        it { is_expected.to respond_to(:type)  }
+        it { is_expected.to respond_to(:type=) }
       end
 
       context "when subclassing this class" do
@@ -200,10 +200,10 @@ describe SmartProperties do
         context "instances of this class" do
           subject(:instance) { subclass.new :title => double(:to_title => 'Lorem ipsum') }
 
-          it { should respond_to :title }
-          it { should respond_to :title= }
-          it { should respond_to :type }
-          it { should respond_to :type= }
+          it { is_expected.to respond_to :title }
+          it { is_expected.to respond_to :title= }
+          it { is_expected.to respond_to :type }
+          it { is_expected.to respond_to :type= }
         end
       end
     end
@@ -224,7 +224,7 @@ describe SmartProperties do
 
       it "should convert the property title as specified the lambda statement" do
         instance.title = "Lorem ipsum"
-        instance.title.should be == "<title>Lorem ipsum</title>"
+        expect(instance.title).to eq("<title>Lorem ipsum</title>")
       end
     end
   end
@@ -250,7 +250,7 @@ describe SmartProperties do
 
       it "should convert the property title as specified the lambda statement" do
         instance.title = "Lorem ipsum"
-        instance.title.should be == "<title>Lorem ipsum</title>"
+        expect(instance.title).to eq("<title>Lorem ipsum</title>")
       end
     end
   end
@@ -355,7 +355,7 @@ describe SmartProperties do
       subject(:instance) { klass.new }
 
       it "should return the accepted value for the property called :text" do
-        instance.text.should be == '<em>Hello</em>'
+        expect(instance.text).to eq('<em>Hello</em>')
       end
     end
   end
@@ -387,7 +387,7 @@ describe SmartProperties do
         first_instance = klass.new
         second_instance = klass.new
 
-        (second_instance.id - first_instance.id).should be == 1
+        expect(second_instance.id - first_instance.id).to eq(1)
       end
     end
   end
@@ -415,16 +415,16 @@ describe SmartProperties do
     context "the class" do
       subject { klass }
 
-      it { should have_smart_property(:title) }
-      it { should have_smart_property(:priority) }
+      it { is_expected.to have_smart_property(:title) }
+      it { is_expected.to have_smart_property(:priority) }
     end
 
     context 'the subclass' do
       subject { subklass }
 
-      it { should have_smart_property(:title) }
-      it { should have_smart_property(:body) }
-      it { should have_smart_property(:priority) }
+      it { is_expected.to have_smart_property(:title) }
+      it { is_expected.to have_smart_property(:body) }
+      it { is_expected.to have_smart_property(:priority) }
 
       it "should be initializable using a block" do
         configuration_instructions = lambda do |s|
@@ -461,7 +461,7 @@ describe SmartProperties do
         subject(:instance) { klass.new :title => nil }
 
         it "should have no title" do
-          instance.title.should be_nil
+          expect(instance.title).to be_nil
         end
       end
 
@@ -469,7 +469,7 @@ describe SmartProperties do
         subject(:instance) { klass.new }
 
         it "should have the default title" do
-          instance.title.should be == 'Lorem Ipsum'
+          expect(instance.title).to eq('Lorem Ipsum')
         end
       end
 
@@ -477,7 +477,7 @@ describe SmartProperties do
         subject(:instance) { klass.new {} }
 
         it "should have the default title" do
-          instance.title.should be == 'Lorem Ipsum'
+          expect(instance.title).to eq('Lorem Ipsum')
         end
       end
     end
@@ -498,7 +498,7 @@ describe SmartProperties do
         subject(:instance) { klass.new :title => 'Lorem Ipsum' }
 
         it "should have no title" do
-          instance.title.should be == 'Lorem Ipsum'
+          expect(instance.title).to eq('Lorem Ipsum')
         end
       end
 
@@ -506,7 +506,7 @@ describe SmartProperties do
         subject(:instance) { klass.new { |i| i.title = 'Lorem Ipsum' } }
 
         it "should have the default title" do
-          instance.title.should be == 'Lorem Ipsum'
+          expect(instance.title).to eq('Lorem Ipsum')
         end
       end
 
@@ -564,7 +564,7 @@ describe SmartProperties do
         subject(:instance) { klass.new :flag => true }
 
         it "should have no title" do
-          instance.flag.should be_true
+          expect(instance.flag).to be_truthy
         end
       end
 
@@ -572,7 +572,7 @@ describe SmartProperties do
         subject(:instance) { klass.new { |i| i.flag = true } }
 
         it "should have the default title" do
-          instance.flag.should be_true
+          expect(instance.flag).to be_truthy
         end
       end
 
@@ -580,7 +580,7 @@ describe SmartProperties do
         subject(:instance) { klass.new }
 
         it "should have false as default flag" do
-          instance.flag.should be_false
+          expect(instance.flag).to be_falsey
         end
       end
     end
