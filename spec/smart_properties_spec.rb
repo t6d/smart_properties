@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 describe SmartProperties do
-
   context "when extending an other class" do
     subject(:klass) do
       Class.new.tap do |c|
@@ -21,7 +20,7 @@ describe SmartProperties do
               property :title, :invalid_option => 'boom'
             end
           end
-        }.to raise_error(ArgumentError, "SmartProperties do not support the following configuration options: invalid_option.")
+        }.to raise_error(SmartProperties::ConfigurationError, "SmartProperties do not support the following configuration options: invalid_option.")
       end
 
       it "should raise an error reporting three invalid options when three invalid options were given" do
@@ -31,7 +30,7 @@ describe SmartProperties do
               property :title, :invalid_option_1 => 'boom', :invalid_option_2 => 'boom', :invalid_option_3 => 'boom'
             end
           end
-        }.to raise_error(ArgumentError, "SmartProperties do not support the following configuration options: invalid_option_1, invalid_option_2, invalid_option_3.")
+        }.to raise_error(SmartProperties::ConfigurationError, "SmartProperties do not support the following configuration options: invalid_option_1, invalid_option_2, invalid_option_3.")
       end
     end
   end
@@ -77,7 +76,9 @@ describe SmartProperties do
       end
 
       it "should not allow to set nil as title" do
-        expect { instance.title = nil }.to raise_error(ArgumentError, "TestDummy requires the property title to be set")
+        expect { instance.title = nil }.to raise_error(SmartProperties::MissingValueError, "TestDummy requires the property title to be set") {|error|
+          expect(error.to_hash[:title]).to eq('must be set')
+        }
       end
 
       it "should not allow to set objects as title that do not respond to #to_title" do
@@ -280,7 +281,9 @@ describe SmartProperties do
       end
 
       it "should not allow to set :maybe as value for visible" do
-        expect { instance.visible = :maybe }.to raise_error(ArgumentError, "TestDummy does not accept :maybe as value for the property visible")
+        expect { instance.visible = :maybe }.to raise_error(SmartProperties::InvalidValueError, "TestDummy does not accept :maybe as value for the property visible") {|error|
+          expect(error.to_hash[:visible]).to eq('does not accept :maybe as value')
+        }
       end
     end
   end
@@ -325,7 +328,9 @@ describe SmartProperties do
       subject(:instance) { klass.new }
 
       it 'should not a accept "invalid" as value for license_plate' do
-        expect { instance.license_plate = "invalid" }.to raise_error(ArgumentError, 'TestDummy does not accept "invalid" as value for the property license_plate')
+        expect { instance.license_plate = "invalid" }.to raise_error(SmartProperties::InvalidValueError, 'TestDummy does not accept "invalid" as value for the property license_plate') {|error|
+          expect(error.to_hash[:license_plate]).to eq('does not accept "invalid" as value')
+        }
       end
 
       it 'should accept "NE RD 1337" as license plate' do
@@ -512,7 +517,9 @@ describe SmartProperties do
 
       context "when created with no arguments" do
         it "should raise an error stating that required properties are missing" do
-          expect { klass.new }.to raise_error(ArgumentError, "Dummy requires the following properties to be set: title")
+          expect { klass.new }.to raise_error(SmartProperties::InitializationError, "Dummy requires the following properties to be set: title") {|error|
+            expect(error.to_hash[:title]).to eq('must be set')
+          }
         end
       end
     end
@@ -538,7 +545,9 @@ describe SmartProperties do
 
     context "when created with no name and anonymous being set to false" do
       it "should raise an error indicating that a required property was not specified" do
-        expect { klass.new anonymous: false }.to raise_error(ArgumentError, "Dummy requires the following properties to be set: name")
+        expect { klass.new anonymous: false }.to raise_error(SmartProperties::InitializationError, "Dummy requires the following properties to be set: name") {|error|
+          expect(error.to_hash[:name]).to eq("must be set")
+        }
       end
     end
 
