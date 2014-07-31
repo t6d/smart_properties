@@ -97,6 +97,20 @@ module SmartProperties
   end
 
   class Property
+    # Defines the two index methods #[] and #[]=. This module will be included
+    # in the SmartProperties method scope.
+    module IndexMethods
+      def [](name)
+        return if name.nil?
+        name &&= name.to_sym
+        public_send(name) if self.class.properties.key?(name)
+      end
+
+      def []=(name, value)
+        return if name.nil?
+        public_send(:"#{name.to_sym}=", value) if self.class.properties.key?(name)
+      end
+    end
 
     attr_reader :name
     attr_reader :converter
@@ -151,7 +165,7 @@ module SmartProperties
       property = self
 
       scope = klass.instance_variable_get(:"@_smart_properties_method_scope") || begin
-        m = Module.new
+        m = Module.new { include IndexMethods }
         klass.send(:include, m)
         klass.instance_variable_set(:"@_smart_properties_method_scope", m)
         m
@@ -182,6 +196,10 @@ module SmartProperties
 
     def [](name)
       collection_with_parent_collection[name]
+    end
+
+    def key?(name)
+      collection_with_parent_collection.key?(name)
     end
 
     def each(&block)
@@ -316,5 +334,4 @@ module SmartProperties
       raise error
     end
   end
-
 end

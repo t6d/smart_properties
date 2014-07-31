@@ -66,12 +66,21 @@ describe SmartProperties do
       it { is_expected.to respond_to(:title) }
       it { is_expected.to respond_to(:title=) }
 
-      it "should have 'chunky' as default value for title" do
+      it "should have 'chunky' as default value for title when accessed using the #title method" do
         expect(instance.title).to eq('chunky')
       end
 
-      it "should convert all values that are assigned to title into strings" do
+      it "should have 'chunky' as default value for title when accessed using the #[] method" do
+        expect(instance[:title]).to eq('chunky')
+      end
+
+      it "should convert all values that are assigned to title into strings when using the #title= method" do
         instance.title = double(:to_title => 'bacon')
+        expect(instance.title).to eq('bacon')
+      end
+
+      it "should convert all values that are assigned to title into strings when using the #[]= method" do
+        instance[:title] = double(:to_title => 'bacon')
         expect(instance.title).to eq('bacon')
       end
 
@@ -158,8 +167,15 @@ describe SmartProperties do
         context "when initialized with a set of attributes" do
           subject(:instance) { subklass.new :title => double(:to_title => 'Message'), :text => "Hello" }
 
-          it("should have the correct title") { expect(instance.title).to eq('Message') }
-          it("should have the correct text") { expect(instance.text).to eq('Hello') }
+          context "when properties are accessed using the dedicated instance methods" do
+            it("should have the correct title") { expect(instance.title).to eq('Message') }
+            it("should have the correct text") { expect(instance.text).to eq('Hello') }
+          end
+
+          context "when properties are accessed using the index methods" do
+            it("should have the correct title") { expect(instance[:title]).to eq('Message') }
+            it("should have the correct text") { expect(instance[:text]).to eq('Hello') }
+          end
         end
 
         context "when initialized with a block" do
@@ -272,18 +288,36 @@ describe SmartProperties do
     context "instances of this class" do
       subject(:instance) { klass.new }
 
-      it "should allow to set true as value for visible" do
-        expect { instance.visible = true }.to_not raise_error
+      context "when properties are accessed using the dedicated instance methods" do
+        it "should allow to set true as value for visible" do
+          expect { instance.visible = true }.to_not raise_error
+        end
+
+        it "should allow to set false as value for visible" do
+          expect { instance.visible = false }.to_not raise_error
+        end
+
+        it "should not allow to set :maybe as value for visible" do
+          expect { instance.visible = :maybe }.to raise_error(SmartProperties::InvalidValueError, "TestDummy does not accept :maybe as value for the property visible") {|error|
+            expect(error.to_hash[:visible]).to eq('does not accept :maybe as value')
+          }
+        end
       end
 
-      it "should allow to set false as value for visible" do
-        expect { instance.visible = false }.to_not raise_error
-      end
+      context "when properties are accessed using the index methods" do
+        it "should allow to set true as value for visible" do
+          expect { instance[:visible] = true }.to_not raise_error
+        end
 
-      it "should not allow to set :maybe as value for visible" do
-        expect { instance.visible = :maybe }.to raise_error(SmartProperties::InvalidValueError, "TestDummy does not accept :maybe as value for the property visible") {|error|
-          expect(error.to_hash[:visible]).to eq('does not accept :maybe as value')
-        }
+        it "should allow to set false as value for visible" do
+          expect { instance[:visible] = false }.to_not raise_error
+        end
+
+        it "should not allow to set :maybe as value for visible" do
+          expect { instance[:visible] = :maybe }.to raise_error(SmartProperties::InvalidValueError, "TestDummy does not accept :maybe as value for the property visible") {|error|
+            expect(error.to_hash[:visible]).to eq('does not accept :maybe as value')
+          }
+        end
       end
     end
   end
@@ -301,12 +335,24 @@ describe SmartProperties do
     context "intance of this class" do
       subject(:instance) { klass.new }
 
-      it "should accept a String as title" do
-        expect { subject.title = "Test" }.to_not raise_error
+      context "when properties are accessed using the dedicated instance methods" do
+        it "should accept a String as title" do
+          expect { subject.title = "Test" }.to_not raise_error
+        end
+
+        it "should accept a Symbol as title" do
+          expect { subject.title = :test }.to_not raise_error
+        end
       end
 
-      it "should accept a Symbol as title" do
-        expect { subject.title = :test }.to_not raise_error
+      context "when properties are accessed using the index methods" do
+        it "should accept a String as title" do
+          expect { subject[:title] = "Test" }.to_not raise_error
+        end
+
+        it "should accept a Symbol as title" do
+          expect { subject[:title] = :test }.to_not raise_error
+        end
       end
     end
   end
@@ -327,14 +373,26 @@ describe SmartProperties do
     context 'instances of this class' do
       subject(:instance) { klass.new }
 
-      it 'should not a accept "invalid" as value for license_plate' do
-        expect { instance.license_plate = "invalid" }.to raise_error(SmartProperties::InvalidValueError, 'TestDummy does not accept "invalid" as value for the property license_plate') {|error|
-          expect(error.to_hash[:license_plate]).to eq('does not accept "invalid" as value')
-        }
+      context "when properties are accessed using the dedicated instance methods" do
+        it 'should not a accept "invalid" as value for license_plate' do
+          expect { instance.license_plate = "invalid" }.to raise_error(SmartProperties::InvalidValueError, 'TestDummy does not accept "invalid" as value for the property license_plate') {|error|
+            expect(error.to_hash[:license_plate]).to eq('does not accept "invalid" as value')
+          }
+        end
+
+        it 'should accept "NE RD 1337" as license plate' do
+          expect { instance.license_plate = "NE RD 1337" }.to_not raise_error
+        end
       end
 
-      it 'should accept "NE RD 1337" as license plate' do
-        expect { instance.license_plate = "NE RD 1337" }.to_not raise_error
+      context "when properties are accessed using the index methods" do
+        it 'should not a accept "invalid" as value for license_plate' do
+          expect { instance[:license_plate] = "invalid" }.to raise_error(ArgumentError, 'TestDummy does not accept "invalid" as value for the property license_plate')
+        end
+
+        it 'should accept "NE RD 1337" as license plate' do
+          expect { instance[:license_plate] = "NE RD 1337" }.to_not raise_error
+        end
       end
     end
   end
@@ -359,8 +417,16 @@ describe SmartProperties do
     context "instances of this class" do
       subject(:instance) { klass.new }
 
-      it "should return the accepted value for the property called :text" do
-        expect(instance.text).to eq('<em>Hello</em>')
+      context "when properties are accessed using the dedicated instance methods" do
+        it "should return the accepted value for the property called :text" do
+          expect(instance.text).to eq('<em>Hello</em>')
+        end
+      end
+
+      context "when properties are accessed using the index methods" do
+        it "should return the accepted value for the property called :text" do
+          expect(instance[:text]).to eq('<em>Hello</em>')
+        end
       end
     end
   end
@@ -473,16 +539,32 @@ describe SmartProperties do
       context 'when created without any arguments' do
         subject(:instance) { klass.new }
 
-        it "should have the default title" do
-          expect(instance.title).to eq('Lorem Ipsum')
+        context "when properties are accessed using the index methods" do
+          it "should have the default title" do
+            expect(instance.title).to eq('Lorem Ipsum')
+          end
+        end
+
+        context "when properties are accessed using the index methods" do
+          it "should have the default title" do
+            expect(instance[:title]).to eq('Lorem Ipsum')
+          end
         end
       end
 
       context 'when created with an empty block' do
         subject(:instance) { klass.new {} }
 
-        it "should have the default title" do
-          expect(instance.title).to eq('Lorem Ipsum')
+        context "when properties are accessed using the index methods" do
+          it "should have the default title" do
+            expect(instance.title).to eq('Lorem Ipsum')
+          end
+        end
+
+        context "when properties are accessed using the index methods" do
+          it "should have the default title" do
+            expect(instance[:title]).to eq('Lorem Ipsum')
+          end
         end
       end
     end
@@ -499,10 +581,10 @@ describe SmartProperties do
     end
 
     context 'instances of that class' do
-      context 'when created with a set of attributes that explicitly contains nil for the title' do
+      context 'when created with a set of attributes that contains a title' do
         subject(:instance) { klass.new :title => 'Lorem Ipsum' }
 
-        it "should have no title" do
+        it "should have the correct title" do
           expect(instance.title).to eq('Lorem Ipsum')
         end
       end
@@ -580,16 +662,32 @@ describe SmartProperties do
       context 'when created with an block specifying that property' do
         subject(:instance) { klass.new { |i| i.flag = true } }
 
-        it "should have the default title" do
-          expect(instance.flag).to be_truthy
+        context "when properties are accessed using the dedicated instance methods" do
+          it "should have the default title" do
+            expect(instance.flag).to be(true)
+          end
+        end
+
+        context "when properties are accessed using the index methods" do
+          it "should have the default title" do
+            expect(instance[:flag]).to be(true)
+          end
         end
       end
 
       context "when created with no arguments" do
         subject(:instance) { klass.new }
 
-        it "should have false as default flag" do
-          expect(instance.flag).to be_falsey
+        context "when properties are accessed using the dedicated instance methods" do
+          it "should have false as default flag" do
+            expect(instance.flag).to be(false)
+          end
+        end
+
+        context "when properties are accessed using the index methods" do
+          it "should have false as default flag" do
+            expect(instance[:flag]).to be(false)
+          end
         end
       end
     end
