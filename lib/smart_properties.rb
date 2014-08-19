@@ -62,16 +62,16 @@ module SmartProperties
       super(
         sender,
         property,
-        "%s does not accept %p as value for the property %s" % [
+        "%s does not accept %s as value for the property %s" % [
           sender.class.name,
-          value,
+          value.inspect,
           property.name
         ]
       )
     end
 
     def to_hash
-      Hash[property.name, "does not accept %p as value" % value]
+      Hash[property.name, "does not accept %s as value" % value.inspect]
     end
   end
 
