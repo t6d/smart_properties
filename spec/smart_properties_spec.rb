@@ -431,6 +431,28 @@ describe SmartProperties do
     end
   end
 
+  context 'when used to build a class that has a required property with no default called :text whose getter is overriden' do
+    subject(:klass) do
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+
+        c.instance_eval do
+          property :text, required: true
+        end
+
+        c.class_eval do
+          def text
+            "<em>#{super}</em>"
+          end
+        end
+      end
+    end
+
+    it "should raise an error during initilization if no value for :text has been specified" do
+      expect { klass.new }.to raise_error(SmartProperties::InitializationError)
+    end
+  end
+
   context 'when used to build a class that has a property called :id whose default value is a lambda statement for retrieving the object_id' do
     subject(:klass) do
       Class.new.tap do |c|
