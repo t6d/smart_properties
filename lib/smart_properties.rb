@@ -315,15 +315,27 @@ module SmartProperties
   def initialize(attrs = {}, &block)
     attrs ||= {}
     properties = self.class.properties.each.to_a
+    missing_properties = []
 
     # Assign attributes or default values
     properties.each do |_, property|
-      value = attrs.fetch(property.name) { property.default(self) }
-      send(:"#{property.name}=", value) unless value.nil?
+      if attrs.key?(property.name)
+        instance_variable_set("@#{property.name}", property.prepare(attrs[property.name], self))
+      else
+        missing_properties.push(property)
+      end
     end
 
     # Exectue configuration block
     block.call(self) if block
+
+    # Set defaults
+    missing_properties.each do |property|
+      variable = "@#{property.name}"
+      if instance_variable_get(variable).nil? && !(default_value = property.default(self)).nil?
+        instance_variable_set(variable, property.prepare(default_value, self))
+      end
+    end
 
     # Check presence of all required properties
     faulty_properties =
