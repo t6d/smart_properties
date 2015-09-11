@@ -431,34 +431,45 @@ describe SmartProperties do
     end
   end
 
-  context 'when used to build a class that has a property called :id whose default value is a lambda statement' do
+  context 'when used to build a class that has a property called :id whose default value is a lambda statement for retrieving the object_id' do
     subject(:klass) do
-      counter = Class.new.tap do |c|
-
-        c.class_eval do
-          def next
-            @counter ||= 0
-            @counter += 1
-          end
-        end
-
-      end.new
-
       Class.new.tap do |c|
         c.send(:include, described_class)
 
         c.instance_eval do
-          property :id, :default => lambda { counter.next }
+          property :id, :default => lambda { object_id }
         end
       end
     end
 
     context "instances of this class" do
-      it "should have auto-incrementing ids" do
+      it "should evaluate the lambda in their own context and thus return a different value for each instance" do
         first_instance = klass.new
         second_instance = klass.new
 
-        expect(second_instance.id - first_instance.id).to eq(1)
+        expect(first_instance.id).to_not eq(second_instance.id)
+      end
+    end
+  end
+
+  context 'when used to build a class that has a property called :boom whose default value is a lambda statement that raises an exception' do
+    subject(:klass) do
+      Class.new.tap do |c|
+        c.send(:include, described_class)
+
+        c.instance_eval do
+          property :boom, :default => lambda { raise 'Boom!' }
+        end
+      end
+    end
+
+    context "instances of this class" do
+      it "should raise during initialization if no other value for :boom has been provided" do
+        expect { klass.new }.to raise_error(RuntimeError, 'Boom!')
+      end
+
+      it "should not evaluate the lambda expression and thus not raise during initialization if a different value for :boom has been provided" do
+        expect { klass.new(boom: 'Everything is just fine!') }.not_to raise_error
       end
     end
   end
