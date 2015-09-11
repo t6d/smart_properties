@@ -21,7 +21,7 @@
 #                           :required => true
 #
 module SmartProperties
-  VERSION = "1.5.1"
+  VERSION = "1.6.0"
 
   class Error < ::ArgumentError; end
   class ConfigurationError < Error; end
@@ -318,7 +318,7 @@ module SmartProperties
 
     # Assign attributes or default values
     properties.each do |_, property|
-      value = attrs.fetch(property.name, property.default(self))
+      value = attrs.fetch(property.name) { property.default(self) }
       send(:"#{property.name}=", value) unless value.nil?
     end
 
