@@ -468,8 +468,12 @@ describe SmartProperties do
         expect { klass.new }.to raise_error(RuntimeError, 'Boom!')
       end
 
-      it "should not evaluate the lambda expression and thus not raise during initialization if a different value for :boom has been provided" do
+      it "should not evaluate the lambda expression and thus not raise during initialization if a different value for :boom has been provided as a parameter" do
         expect { klass.new(boom: 'Everything is just fine!') }.not_to raise_error
+      end
+
+      it "should not evaluate the lambda expression and thus not raise during initialization if a different value for :boom has been provided in an initilization block" do
+        expect { klass.new { |inst| inst.boom = 'Everything is just fine!' } }.not_to raise_error
       end
     end
   end
