@@ -339,7 +339,7 @@ module SmartProperties
 
     # Check presence of all required properties
     faulty_properties =
-      properties.select { |_, property| property.required?(self) && send(property.name).nil? }.map(&:last)
+      properties.select { |_, property| property.required?(self) && instance_variable_get("@#{property.name}").nil? }.map(&:last)
     unless faulty_properties.empty?
       error = SmartProperties::InitializationError.new(self, faulty_properties)
       raise error
