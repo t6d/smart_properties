@@ -312,8 +312,10 @@ module SmartProperties
   #
   # @param [Hash] attrs the set of attributes that is used for initialization
   #
-  def initialize(attrs = {}, &block)
-    attrs ||= {}
+  def initialize(*args, &block)
+    attrs = args.last.is_a?(Hash) ? args.pop : {}
+    super(*args)
+
     properties = self.class.properties.each.to_a
     missing_properties = []
 

@@ -1,6 +1,68 @@
 require 'spec_helper'
 
 describe SmartProperties do
+  described_module = self.described_class
+
+  context 'when extending a subclass' do
+    let(:klass) do
+      Class.new do
+        attr_reader :a, :b
+
+        def initialize(a = 13, b = nil)
+          @a = a
+          @b = b
+        end
+      end
+    end
+
+    let(:subklass) do
+      Class.new(klass) do
+        include described_module
+        property :title
+      end
+    end
+
+    context 'when creating new instances' do
+      it 'should call the super-class constructor' do
+        instance = subklass.new
+        expect(instance.a).to eq(13)
+      end
+
+      it 'should handle keyword arguments' do
+        instance = subklass.new(:title => 'Lorem ipsum')
+        expect(instance.title).to eq('Lorem ipsum')
+      end
+    end
+
+    context 'when creating new instances with additional positional arguments' do
+      it 'it should forward those arguments to super-class constructor' do
+        instance = subklass.new(1, 2)
+        expect(instance.a).to eq(1)
+        expect(instance.b).to eq(2)
+      end
+
+      it 'should forward arrays as they are to the super-class constructor' do
+        instance = subklass.new([1, 2])
+        expect(instance.a).to eq([1, 2])
+        expect(instance.b).to eq(nil)
+      end
+
+      it 'should handle keyword arguments' do
+        instance = subklass.new(1, :title => 'Lorem ipsum')
+        expect(instance.a).to eq(1)
+        expect(instance.b).to eq(nil)
+        expect(instance.title).to eq('Lorem ipsum')
+      end
+
+      it 'should handle blocks' do
+        instance = subklass.new(1) { |i| i.title = 'Lorem ipsum' }
+        expect(instance.a).to eq(1)
+        expect(instance.b).to eq(nil)
+        expect(instance.title).to eq('Lorem ipsum')
+      end
+    end
+  end
+
   context "when extending an other class" do
     subject(:klass) do
       Class.new.tap do |c|
