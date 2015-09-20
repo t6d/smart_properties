@@ -86,4 +86,19 @@ RSpec.describe SmartProperties do
       end
     end
   end
+
+  context "when building a class that has a required property with a default value and a malicious converter that always returns nil" do
+    subject(:klass) { DummyClass.new { property :title, required: true, converts: ->(_) { nil }, default: "Lorem Ipsum" } }
+
+    context 'an instance of this class' do
+      it "should raise an error when initialized" do
+        exception = SmartProperties::MissingValueError
+        message = "Dummy requires the property title to be set"
+        further_expectations = lambda { |error| expect(error.to_hash[:title]).to eq("must be set") }
+
+        expect { klass.new }.to raise_error(exception, message)
+        expect { klass.new(title: 'Lorem Ipsum') }.to raise_error(exception, message, &further_expectations)
+      end
+    end
+  end
 end

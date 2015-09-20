@@ -51,6 +51,9 @@ RSpec.describe SmartProperties do
 
         expect { instance.title = nil }.to raise_error(exception, message, &further_expectations)
         expect { instance[:title] = nil }.to raise_error(exception, message, &further_expectations)
+
+        expect { instance.title = double(to_title: nil) }.to raise_error(exception, message, &further_expectations)
+        expect { instance[:title] = double(to_title: nil) }.to raise_error(exception, message, &further_expectations)
       end
 
       it "should not influence other instances that have been initialized with different attributes" do
