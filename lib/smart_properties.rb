@@ -156,6 +156,7 @@ module SmartProperties
     def prepare(value, scope)
       raise MissingValueError.new(scope, self) if required?(scope) && value.nil?
       value = convert(value, scope) unless value.nil?
+      raise MissingValueError.new(scope, self) if required?(scope) && value.nil?
       raise InvalidValueError.new(scope, self, value) unless accepts?(value, scope)
       value
     end
