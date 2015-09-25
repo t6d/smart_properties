@@ -33,6 +33,16 @@ RSpec.describe SmartProperties, 'intheritance' do
     context 'the section class' do
       it('should respond to #properties') { expect(section).to respond_to(:properties) }
 
+      it "should expose the names of the properties through its property collection" do
+        expect(section.properties.keys).to eq([:title])
+      end
+
+      it "should expose the the properties through its property collection" do
+        properties = subsection.properties.values
+        expect(properties.first).to be_kind_of(SmartProperties::Property)
+        expect(properties.first.name).to eq(:title)
+      end
+
       context 'an instance of this class' do
         subject { section.new }
         it { is_expected.to have_smart_property(:title) }
@@ -47,6 +57,19 @@ RSpec.describe SmartProperties, 'intheritance' do
 
     context 'the subsectionclass' do
       it('should respond to #properties') { expect(subsection).to respond_to(:properties) }
+
+      it "should expose the names of the properties through its property collection" do
+        expect(subsection.properties.keys).to eq([:title, :subtitle])
+      end
+
+      it "should expose the the properties through its property collection" do
+        properties = subsection.properties.values
+        expect(properties.first).to be_kind_of(SmartProperties::Property)
+        expect(properties.first.name).to eq(:title)
+
+        expect(properties.last).to be_kind_of(SmartProperties::Property)
+        expect(properties.last.name).to eq(:subtitle)
+      end
 
       context 'an instance of this class' do
         subject(:instance) { subsection.new }
