@@ -202,6 +202,14 @@ module SmartProperties
       collection_with_parent_collection.key?(name)
     end
 
+    def keys
+      collection_with_parent_collection.keys
+    end
+
+    def values
+      collection_with_parent_collection.values
+    end
+
     def each(&block)
       collection_with_parent_collection.each(&block)
     end
