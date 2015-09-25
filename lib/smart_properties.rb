@@ -21,7 +21,7 @@
 #                           :required => true
 #
 module SmartProperties
-  VERSION = "1.8.1"
+  VERSION = "1.9.0"
 
   class Error < ::ArgumentError; end
   class ConfigurationError < Error; end
