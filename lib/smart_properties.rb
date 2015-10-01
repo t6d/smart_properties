@@ -135,6 +135,7 @@ module SmartProperties
 
     def convert(value, scope)
       return value unless converter
+      return value if null_object?(value)
       scope.instance_exec(value, &converter)
     end
 
@@ -143,8 +144,8 @@ module SmartProperties
     end
 
     def accepts?(value, scope)
-      return true unless value
       return true unless accepter
+      return true if null_object?(value)
 
       if accepter.respond_to?(:to_proc)
         !!scope.instance_exec(value, &accepter)
@@ -154,9 +155,10 @@ module SmartProperties
     end
 
     def prepare(value, scope)
-      raise MissingValueError.new(scope, self) if required?(scope) && value.nil?
-      value = convert(value, scope) unless value.nil?
-      raise MissingValueError.new(scope, self) if required?(scope) && value.nil?
+      required = required?(scope)
+      raise MissingValueError.new(scope, self) if required && null_object?(value)
+      value = convert(value, scope)
+      raise MissingValueError.new(scope, self) if required && null_object?(value)
       raise InvalidValueError.new(scope, self, value) unless accepts?(value, scope)
       value
     end
@@ -177,6 +179,20 @@ module SmartProperties
       end
     end
 
+    def null_object?(object)
+      return true if object == nil
+      return true if object.nil?
+      false
+    rescue NoMethodError => error
+      # BasicObject does not respond to #nil? by default, so we need to double
+      # check if somebody implemented it and it fails internally or if the
+      # error occured because the method is actually not present. In the former
+      # case, we want to raise the exception because there is something wrong
+      # with the implementation of object#nil?. In the latter case we treat the
+      # object as truthy because we don't know better.
+      raise error if (class << object; self; end).public_instance_methods.include?(:nil?)
+      false
+    end
   end
 
   class PropertyCollection
@@ -343,14 +359,14 @@ module SmartProperties
     # Set defaults
     missing_properties.each do |property|
       variable = "@#{property.name}"
-      if instance_variable_get(variable).nil? && !(default_value = property.default(self)).nil?
+      if property.null_object?(instance_variable_get(variable)) && !property.null_object?(default_value = property.default(self))
         instance_variable_set(variable, property.prepare(default_value, self))
       end
     end
 
     # Check presence of all required properties
     faulty_properties =
-      properties.select { |_, property| property.required?(self) && instance_variable_get("@#{property.name}").nil? }.map(&:last)
+      properties.select { |_, property| property.required?(self) && property.null_object?(instance_variable_get("@#{property.name}")) }.map(&:last)
     unless faulty_properties.empty?
       error = SmartProperties::InitializationError.new(self, faulty_properties)
       raise error
