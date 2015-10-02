@@ -90,7 +90,7 @@ module SmartProperties
 
       scope.send(:attr_reader, name)
       scope.send(:define_method, :"#{name}=") do |value|
-        instance_variable_set("@#{property.name}", property.prepare(self, value))
+        property.set(self, value)
       end
     end
 
