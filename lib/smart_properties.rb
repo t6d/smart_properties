@@ -127,12 +127,7 @@ module SmartProperties
     block.call(self) if block
 
     # Set defaults
-    missing_properties.each do |property|
-      variable = property.instance_variable_name
-      if property.null_object?(instance_variable_get(variable)) && !property.null_object?(default_value = property.default(self))
-        property.set(self, default_value)
-      end
-    end
+    missing_properties.each { |property| property.set_default(self) }
 
     # Check presence of all required properties
     faulty_properties =

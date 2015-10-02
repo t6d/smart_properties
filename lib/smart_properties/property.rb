@@ -98,6 +98,13 @@ module SmartProperties
       scope.instance_variable_set(instance_variable_name, prepare(scope, value))
     end
 
+    def set_default(scope)
+      if null_object?(get(scope))
+        default_value = default(scope)
+        set(scope, default_value) unless null_object?(default_value)
+      end
+    end
+
     def get(scope)
       scope.instance_variable_get(instance_variable_name)
     end
