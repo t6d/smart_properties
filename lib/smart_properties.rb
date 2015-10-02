@@ -82,10 +82,7 @@ module SmartProperties
     #                           :required => true
     #
     def property(name, options = {})
-      p = Property.new(name, options)
-      p.define(self)
-
-      properties[name] = p
+      properties[name] = Property.define(self, name, options)
     end
     protected :property
   end
