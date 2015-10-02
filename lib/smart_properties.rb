@@ -111,30 +111,28 @@ module SmartProperties
     attrs = args.last.is_a?(Hash) ? args.pop : {}
     super(*args)
 
-    properties = self.class.properties.each.to_a
+    properties = self.class.properties.to_hash
     missing_properties = []
 
-    # Assign attributes or default values
-    properties.each do |_, property|
-      if attrs.key?(property.name)
-        property.set(self, attrs[property.name])
+    # Set values
+    properties.each do |name, property|
+      if attrs.key?(name)
+        property.set(self, attrs[name])
       else
         missing_properties.push(property)
       end
     end
 
-    # Exectue configuration block
+    # Execute configuration block
     block.call(self) if block
 
-    # Set defaults
+    # Set default values for missing properties
     missing_properties.each { |property| property.set_default(self) }
 
     # Check presence of all required properties
-    faulty_properties =
-      properties.select { |_, property| property.missing?(self) }.map(&:last)
+    faulty_properties = properties.select { |_, property| property.missing?(self) }
     unless faulty_properties.empty?
-      error = SmartProperties::InitializationError.new(self, faulty_properties)
-      raise error
+      raise SmartProperties::InitializationError.new(self, faulty_properties.values)
     end
   end
 end
