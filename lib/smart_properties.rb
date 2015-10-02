@@ -31,13 +31,7 @@ module SmartProperties
     # @return [Hash<String, Property>] A map of property names to property instances.
     #
     def properties
-      @_smart_properties ||= begin
-        parent = if self != SmartProperties
-          (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
-        end
-
-        parent.nil? ? PropertyCollection.new : PropertyCollection.new(parent.properties)
-      end
+      @_smart_properties ||= PropertyCollection.for(self)
     end
 
     ##

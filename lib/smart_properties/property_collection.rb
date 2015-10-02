@@ -4,6 +4,14 @@ module SmartProperties
 
     attr_reader :parent
 
+    def self.for(scope)
+      parent = scope.ancestors[1..-1].find do |ancestor|
+        ancestor.ancestors.include?(SmartProperties) && ancestor != SmartProperties
+      end
+
+      parent.nil? ? new : new(parent.properties)
+    end
+
     def initialize(parent = nil)
       @parent = parent
       @collection = {}
