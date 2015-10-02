@@ -65,7 +65,7 @@ module SmartProperties
       end
     end
 
-    def prepare(value, scope)
+    def prepare(scope, value)
       required = required?(scope)
       raise MissingValueError.new(scope, self) if required && null_object?(value)
       value = convert(scope, value)
@@ -86,7 +86,7 @@ module SmartProperties
 
       scope.send(:attr_reader, name)
       scope.send(:define_method, :"#{name}=") do |value|
-        instance_variable_set("@#{property.name}", property.prepare(value, self))
+        instance_variable_set("@#{property.name}", property.prepare(self, value))
       end
     end
 

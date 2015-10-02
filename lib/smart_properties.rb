@@ -117,7 +117,7 @@ module SmartProperties
     # Assign attributes or default values
     properties.each do |_, property|
       if attrs.key?(property.name)
-        instance_variable_set(property.instance_variable_name, property.prepare(attrs[property.name], self))
+        instance_variable_set(property.instance_variable_name, property.prepare(self, attrs[property.name]))
       else
         missing_properties.push(property)
       end
@@ -130,7 +130,7 @@ module SmartProperties
     missing_properties.each do |property|
       variable = property.instance_variable_name
       if property.null_object?(instance_variable_get(variable)) && !property.null_object?(default_value = property.default(self))
-        instance_variable_set(variable, property.prepare(default_value, self))
+        instance_variable_set(variable, property.prepare(self, default_value))
       end
     end
 
