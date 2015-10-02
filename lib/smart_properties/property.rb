@@ -90,6 +90,14 @@ module SmartProperties
       end
     end
 
+    def set(scope, value)
+      scope.instance_variable_set(instance_variable_name, prepare(scope, value))
+    end
+
+    def get(scope)
+      scope.instance_variable_get(instance_variable_name)
+    end
+
     def null_object?(object)
       return true if object == nil
       return true if object.nil?

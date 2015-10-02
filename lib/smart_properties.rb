@@ -117,7 +117,7 @@ module SmartProperties
     # Assign attributes or default values
     properties.each do |_, property|
       if attrs.key?(property.name)
-        instance_variable_set(property.instance_variable_name, property.prepare(self, attrs[property.name]))
+        property.set(self, attrs[property.name])
       else
         missing_properties.push(property)
       end
@@ -130,13 +130,13 @@ module SmartProperties
     missing_properties.each do |property|
       variable = property.instance_variable_name
       if property.null_object?(instance_variable_get(variable)) && !property.null_object?(default_value = property.default(self))
-        instance_variable_set(variable, property.prepare(self, default_value))
+        property.set(self, default_value)
       end
     end
 
     # Check presence of all required properties
     faulty_properties =
-      properties.select { |_, property| property.required?(self) && property.null_object?(instance_variable_get(property.instance_variable_name)) }.map(&:last)
+      properties.select { |_, property| property.required?(self) && property.null_object?(property.get(self)) }.map(&:last)
     unless faulty_properties.empty?
       error = SmartProperties::InitializationError.new(self, faulty_properties)
       raise error
