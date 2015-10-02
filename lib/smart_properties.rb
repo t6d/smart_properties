@@ -23,225 +23,7 @@
 module SmartProperties
   VERSION = "1.9.0"
 
-  class Error < ::ArgumentError; end
-  class ConfigurationError < Error; end
-
-  class AssignmentError < Error
-    attr_accessor :sender
-    attr_accessor :property
-
-    def initialize(sender, property, message)
-      @sender = sender
-      @property = property
-      super(message)
-    end
-  end
-
-  class MissingValueError < AssignmentError
-    def initialize(sender, property)
-      super(
-        sender,
-        property,
-        "%s requires the property %s to be set" % [
-          sender.class.name,
-          property.name
-        ]
-      )
-    end
-
-    def to_hash
-      Hash[property.name, "must be set"]
-    end
-  end
-
-  class InvalidValueError < AssignmentError
-    attr_accessor :value
-
-    def initialize(sender, property, value)
-      @value = value
-      super(
-        sender,
-        property,
-        "%s does not accept %s as value for the property %s" % [
-          sender.class.name,
-          value.inspect,
-          property.name
-        ]
-      )
-    end
-
-    def to_hash
-      Hash[property.name, "does not accept %s as value" % value.inspect]
-    end
-  end
-
-  class InitializationError < Error
-    attr_accessor :sender
-    attr_accessor :properties
-
-    def initialize(sender, properties)
-      @sender = sender
-      @properties = properties
-      super(
-        "%s requires the following properties to be set: %s" % [
-          sender.class.name,
-          properties.map(&:name).sort.join(', ')
-        ]
-      )
-    end
-
-    def to_hash
-      properties.each_with_object({}) { |property, errors| errors[property.name] = "must be set" }
-    end
-  end
-
-  class Property
-    # Defines the two index methods #[] and #[]=. This module will be included
-    # in the SmartProperties method scope.
-    module IndexMethods
-      def [](name)
-        return if name.nil?
-        name &&= name.to_sym
-        public_send(name) if self.class.properties.key?(name)
-      end
-
-      def []=(name, value)
-        return if name.nil?
-        public_send(:"#{name.to_sym}=", value) if self.class.properties.key?(name)
-      end
-    end
-
-    attr_reader :name
-    attr_reader :converter
-    attr_reader :accepter
-
-    def initialize(name, attrs = {})
-      attrs = attrs.dup
-
-      @name      = name.to_sym
-      @default   = attrs.delete(:default)
-      @converter = attrs.delete(:converts)
-      @accepter  = attrs.delete(:accepts)
-      @required  = attrs.delete(:required)
-
-      unless attrs.empty?
-        raise ConfigurationError, "SmartProperties do not support the following configuration options: #{attrs.keys.map { |m| m.to_s }.sort.join(', ')}."
-      end
-    end
-
-    def required?(scope)
-      @required.kind_of?(Proc) ? scope.instance_exec(&@required) : !!@required
-    end
-
-    def convert(value, scope)
-      return value unless converter
-      return value if null_object?(value)
-      scope.instance_exec(value, &converter)
-    end
-
-    def default(scope)
-      @default.kind_of?(Proc) ? scope.instance_exec(&@default) : @default
-    end
-
-    def accepts?(value, scope)
-      return true unless accepter
-      return true if null_object?(value)
-
-      if accepter.respond_to?(:to_proc)
-        !!scope.instance_exec(value, &accepter)
-      else
-        Array(accepter).any? { |accepter| accepter === value }
-      end
-    end
-
-    def prepare(value, scope)
-      required = required?(scope)
-      raise MissingValueError.new(scope, self) if required && null_object?(value)
-      value = convert(value, scope)
-      raise MissingValueError.new(scope, self) if required && null_object?(value)
-      raise InvalidValueError.new(scope, self, value) unless accepts?(value, scope)
-      value
-    end
-
-    def define(klass)
-      property = self
-
-      scope = klass.instance_variable_get(:"@_smart_properties_method_scope") || begin
-        m = Module.new { include IndexMethods }
-        klass.send(:include, m)
-        klass.instance_variable_set(:"@_smart_properties_method_scope", m)
-        m
-      end
-
-      scope.send(:attr_reader, name)
-      scope.send(:define_method, :"#{name}=") do |value|
-        instance_variable_set("@#{property.name}", property.prepare(value, self))
-      end
-    end
-
-    def null_object?(object)
-      return true if object == nil
-      return true if object.nil?
-      false
-    rescue NoMethodError => error
-      # BasicObject does not respond to #nil? by default, so we need to double
-      # check if somebody implemented it and it fails internally or if the
-      # error occured because the method is actually not present. In the former
-      # case, we want to raise the exception because there is something wrong
-      # with the implementation of object#nil?. In the latter case we treat the
-      # object as truthy because we don't know better.
-      raise error if (class << object; self; end).public_instance_methods.include?(:nil?)
-      false
-    end
-  end
-
-  class PropertyCollection
-
-    include Enumerable
-
-    attr_reader :parent
-
-    def initialize(parent = nil)
-      @parent = parent
-      @collection = {}
-    end
-
-    def []=(name, value)
-      collection[name] = value
-    end
-
-    def [](name)
-      collection_with_parent_collection[name]
-    end
-
-    def key?(name)
-      collection_with_parent_collection.key?(name)
-    end
-
-    def keys
-      collection_with_parent_collection.keys
-    end
-
-    def values
-      collection_with_parent_collection.values
-    end
-
-    def each(&block)
-      collection_with_parent_collection.each(&block)
-    end
-
-    protected
-
-      attr_accessor :collection
-
-      def collection_with_parent_collection
-        parent.nil? ? collection : parent.collection.merge(collection)
-      end
-
-  end
-
   module ClassMethods
-
     ##
     # Returns a class's smart properties. This includes the properties that
     # have been defined in the parent classes.
@@ -312,23 +94,20 @@ module SmartProperties
       properties[name] = p
     end
     protected :property
-
   end
 
   class << self
-
     private
 
-      ##
-      # Extends the class, which this module is included in, with a property
-      # method to define properties.
-      #
-      # @param [Class] base the class this module is included in
-      #
-      def included(base)
-        base.extend(ClassMethods)
-      end
-
+    ##
+    # Extends the class, which this module is included in, with a property
+    # method to define properties.
+    #
+    # @param [Class] base the class this module is included in
+    #
+    def included(base)
+      base.extend(ClassMethods)
+    end
   end
 
   ##
@@ -373,3 +152,7 @@ module SmartProperties
     end
   end
 end
+
+require_relative 'smart_properties/property_collection'
+require_relative 'smart_properties/property'
+require_relative 'smart_properties/errors'
