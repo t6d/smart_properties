@@ -41,6 +41,10 @@ module SmartProperties
       collection_with_parent_collection.each(&block)
     end
 
+    def to_hash
+      collection_with_parent_collection.dup
+    end
+
     protected
 
     attr_accessor :collection
