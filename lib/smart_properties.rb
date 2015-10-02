@@ -136,7 +136,7 @@ module SmartProperties
 
     # Check presence of all required properties
     faulty_properties =
-      properties.select { |_, property| property.required?(self) && property.null_object?(property.get(self)) }.map(&:last)
+      properties.select { |_, property| property.missing?(self) }.map(&:last)
     unless faulty_properties.empty?
       error = SmartProperties::InitializationError.new(self, faulty_properties)
       raise error

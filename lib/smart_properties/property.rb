@@ -44,6 +44,10 @@ module SmartProperties
       @required.kind_of?(Proc) ? scope.instance_exec(&@required) : !!@required
     end
 
+    def missing?(scope)
+      required?(scope) && null_object?(get(scope))
+    end
+
     def convert(scope, value)
       return value unless converter
       return value if null_object?(value)
