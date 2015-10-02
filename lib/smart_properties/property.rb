@@ -109,6 +109,8 @@ module SmartProperties
       scope.instance_variable_get(instance_variable_name)
     end
 
+    private
+
     def null_object?(object)
       return true if object == nil
       return true if object.nil?
