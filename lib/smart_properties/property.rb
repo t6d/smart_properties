@@ -44,7 +44,7 @@ module SmartProperties
       @required.kind_of?(Proc) ? scope.instance_exec(&@required) : !!@required
     end
 
-    def convert(value, scope)
+    def convert(scope, value)
       return value unless converter
       return value if null_object?(value)
       scope.instance_exec(value, &converter)
@@ -68,7 +68,7 @@ module SmartProperties
     def prepare(value, scope)
       required = required?(scope)
       raise MissingValueError.new(scope, self) if required && null_object?(value)
-      value = convert(value, scope)
+      value = convert(scope, value)
       raise MissingValueError.new(scope, self) if required && null_object?(value)
       raise InvalidValueError.new(scope, self, value) unless accepts?(value, scope)
       value
