@@ -18,6 +18,11 @@ module SmartProperties
     attr_reader :name
     attr_reader :converter
     attr_reader :accepter
+    attr_reader :instance_variable_name
+
+    def self.define(scope, name, options = {})
+      new(name, options).tap { |p| p.define(scope) }
+    end
 
     def initialize(name, attrs = {})
       attrs = attrs.dup
@@ -28,6 +33,8 @@ module SmartProperties
       @accepter  = attrs.delete(:accepts)
       @required  = attrs.delete(:required)
 
+      @instance_variable_name = :"@#{name}"
+
       unless attrs.empty?
         raise ConfigurationError, "SmartProperties do not support the following configuration options: #{attrs.keys.map { |m| m.to_s }.sort.join(', ')}."
       end
@@ -37,7 +44,11 @@ module SmartProperties
       @required.kind_of?(Proc) ? scope.instance_exec(&@required) : !!@required
     end
 
-    def convert(value, scope)
+    def missing?(scope)
+      required?(scope) && null_object?(get(scope))
+    end
+
+    def convert(scope, value)
       return value unless converter
       return value if null_object?(value)
       scope.instance_exec(value, &converter)
@@ -58,10 +69,10 @@ module SmartProperties
       end
     end
 
-    def prepare(value, scope)
+    def prepare(scope, value)
       required = required?(scope)
       raise MissingValueError.new(scope, self) if required && null_object?(value)
-      value = convert(value, scope)
+      value = convert(scope, value)
       raise MissingValueError.new(scope, self) if required && null_object?(value)
       raise InvalidValueError.new(scope, self, value) unless accepts?(value, scope)
       value
@@ -79,9 +90,26 @@ module SmartProperties
 
       scope.send(:attr_reader, name)
       scope.send(:define_method, :"#{name}=") do |value|
-        instance_variable_set("@#{property.name}", property.prepare(value, self))
+        property.set(self, value)
       end
     end
+
+    def set(scope, value)
+      scope.instance_variable_set(instance_variable_name, prepare(scope, value))
+    end
+
+    def set_default(scope)
+      if null_object?(get(scope))
+        default_value = default(scope)
+        set(scope, default_value) unless null_object?(default_value)
+      end
+    end
+
+    def get(scope)
+      scope.instance_variable_get(instance_variable_name)
+    end
+
+    private
 
     def null_object?(object)
       return true if object == nil

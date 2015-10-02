@@ -31,13 +31,7 @@ module SmartProperties
     # @return [Hash<String, Property>] A map of property names to property instances.
     #
     def properties
-      @_smart_properties ||= begin
-        parent = if self != SmartProperties
-          (ancestors[1..-1].find { |klass| klass.ancestors.include?(SmartProperties) && klass != SmartProperties })
-        end
-
-        parent.nil? ? PropertyCollection.new : PropertyCollection.new(parent.properties)
-      end
+      @_smart_properties ||= PropertyCollection.for(self)
     end
 
     ##
@@ -88,10 +82,7 @@ module SmartProperties
     #                           :required => true
     #
     def property(name, options = {})
-      p = Property.new(name, options)
-      p.define(self)
-
-      properties[name] = p
+      properties[name] = Property.define(self, name, options)
     end
     protected :property
   end
@@ -120,35 +111,28 @@ module SmartProperties
     attrs = args.last.is_a?(Hash) ? args.pop : {}
     super(*args)
 
-    properties = self.class.properties.each.to_a
+    properties = self.class.properties.to_hash
     missing_properties = []
 
-    # Assign attributes or default values
-    properties.each do |_, property|
-      if attrs.key?(property.name)
-        instance_variable_set("@#{property.name}", property.prepare(attrs[property.name], self))
+    # Set values
+    properties.each do |name, property|
+      if attrs.key?(name)
+        property.set(self, attrs[name])
       else
         missing_properties.push(property)
       end
     end
 
-    # Exectue configuration block
+    # Execute configuration block
     block.call(self) if block
 
-    # Set defaults
-    missing_properties.each do |property|
-      variable = "@#{property.name}"
-      if property.null_object?(instance_variable_get(variable)) && !property.null_object?(default_value = property.default(self))
-        instance_variable_set(variable, property.prepare(default_value, self))
-      end
-    end
+    # Set default values for missing properties
+    missing_properties.each { |property| property.set_default(self) }
 
     # Check presence of all required properties
-    faulty_properties =
-      properties.select { |_, property| property.required?(self) && property.null_object?(instance_variable_get("@#{property.name}")) }.map(&:last)
+    faulty_properties = properties.select { |_, property| property.missing?(self) }
     unless faulty_properties.empty?
-      error = SmartProperties::InitializationError.new(self, faulty_properties)
-      raise error
+      raise SmartProperties::InitializationError.new(self, faulty_properties.values)
     end
   end
 end
