@@ -18,6 +18,7 @@ module SmartProperties
     attr_reader :name
     attr_reader :converter
     attr_reader :accepter
+    attr_reader :instance_variable_name
 
     def self.define(scope, name, options = {})
       new(name, options).tap { |p| p.define(scope) }
@@ -31,6 +32,8 @@ module SmartProperties
       @converter = attrs.delete(:converts)
       @accepter  = attrs.delete(:accepts)
       @required  = attrs.delete(:required)
+
+      @instance_variable_name = :"@#{name}"
 
       unless attrs.empty?
         raise ConfigurationError, "SmartProperties do not support the following configuration options: #{attrs.keys.map { |m| m.to_s }.sort.join(', ')}."
