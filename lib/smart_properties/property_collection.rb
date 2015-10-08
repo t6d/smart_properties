@@ -50,7 +50,7 @@ module SmartProperties
     attr_accessor :collection
 
     def collection_with_parent_collection
-      parent.nil? ? collection : parent.collection.merge(collection)
+      parent.nil? ? collection : parent.collection_with_parent_collection.merge(collection)
     end
   end
 end

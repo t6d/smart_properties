@@ -25,6 +25,7 @@ RSpec.describe SmartProperties, 'intheritance' do
     end
     let!(:section) { DummyClass.new(base) { property :title } }
     let!(:subsection) { DummyClass.new(section) { property :subtitle } }
+    let!(:subsubsection) { DummyClass.new(subsection) { property :subsubtitle } }
 
     context 'the base class' do
       it('should not respond to #properties') { expect(base).to_not respond_to(:properties) }
@@ -88,6 +89,47 @@ RSpec.describe SmartProperties, 'intheritance' do
           expect(instance.content).to eq('some content')
           expect(instance.title).to eq('some title')
           expect(instance.subtitle).to eq('some subtitle')
+        end
+      end
+    end
+
+    context 'the subsubsectionclass' do
+      it "should expose the names of the properties through its property collection" do
+        expect(subsubsection.properties.keys).to eq([:title, :subtitle, :subsubtitle])
+      end
+
+      it "should expose the the properties through its property collection" do
+        properties = subsubsection.properties.values
+
+        expect(properties[0]).to be_kind_of(SmartProperties::Property)
+        expect(properties[0].name).to eq(:title)
+
+        expect(properties[1]).to be_kind_of(SmartProperties::Property)
+        expect(properties[1].name).to eq(:subtitle)
+
+        expect(properties[2]).to be_kind_of(SmartProperties::Property)
+        expect(properties[2].name).to eq(:subsubtitle)
+      end
+
+      context 'an instance of this class' do
+        subject(:instance) { subsection.new }
+        it { is_expected.to have_smart_property(:title) }
+        it { is_expected.to have_smart_property(:subtitle) }
+
+        it 'should have content, a title, and a subtile when initialized with these parameters' do
+          instance = subsubsection.new('some content', title: 'some title', subtitle: 'some subtitle', subsubtitle: 'some subsubtitle')
+          expect(instance.content).to eq('some content')
+          expect(instance.title).to eq('some title')
+          expect(instance.subtitle).to eq('some subtitle')
+          expect(instance.subsubtitle).to eq('some subsubtitle')
+
+          instance = subsubsection.new('some content') do |s|
+            s.title, s.subtitle, s.subsubtitle = 'some title', 'some subtitle', 'some subsubtitle'
+          end
+          expect(instance.content).to eq('some content')
+          expect(instance.title).to eq('some title')
+          expect(instance.subtitle).to eq('some subtitle')
+          expect(instance.subsubtitle).to eq('some subsubtitle')
         end
       end
     end
