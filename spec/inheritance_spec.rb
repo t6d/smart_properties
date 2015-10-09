@@ -17,10 +17,9 @@ RSpec.describe SmartProperties, 'intheritance' do
   context 'when modeling the following class hiearchy: Base > Section > SectionWithSubtitle' do
     let!(:base) do
       Class.new do
-        attr_reader :content, :options
-        def initialize(content = nil, options = {})
+        attr_reader :content
+        def initialize(content = nil)
           @content = content
-          @options = options
         end
       end
     end
@@ -49,11 +48,6 @@ RSpec.describe SmartProperties, 'intheritance' do
         subject { section.new }
         it { is_expected.to have_smart_property(:title) }
         it { is_expected.to_not have_smart_property(:subtitle) }
-
-        it 'should forward keyword arguments that do not correspond to a property to the super class constructor' do
-          instance = section.new('some content', answer: 42)
-          expect(instance.options).to eq({answer: 42})
-        end
       end
 
       context 'an instance of this class when initialized with content' do
@@ -96,11 +90,6 @@ RSpec.describe SmartProperties, 'intheritance' do
           expect(instance.title).to eq('some title')
           expect(instance.subtitle).to eq('some subtitle')
         end
-
-        it 'should forward keyword arguments that do not correspond to a property to the super class constructor' do
-          instance = subsection.new('some content', answer: 42)
-          expect(instance.options).to eq({answer: 42})
-        end
       end
     end
 
@@ -123,10 +112,9 @@ RSpec.describe SmartProperties, 'intheritance' do
       end
 
       context 'an instance of this class' do
-        subject(:instance) { subsubsection.new }
+        subject(:instance) { subsection.new }
         it { is_expected.to have_smart_property(:title) }
         it { is_expected.to have_smart_property(:subtitle) }
-        it { is_expected.to have_smart_property(:subsubtitle) }
 
         it 'should have content, a title, and a subtile when initialized with these parameters' do
           instance = subsubsection.new('some content', title: 'some title', subtitle: 'some subtitle', subsubtitle: 'some subsubtitle')
@@ -142,11 +130,6 @@ RSpec.describe SmartProperties, 'intheritance' do
           expect(instance.title).to eq('some title')
           expect(instance.subtitle).to eq('some subtitle')
           expect(instance.subsubtitle).to eq('some subsubtitle')
-        end
-
-        it 'should forward keyword arguments that do not correspond to a property to the super class constructor' do
-          instance = subsubsection.new('some content', answer: 42)
-          expect(instance.options).to eq({answer: 42})
         end
       end
     end

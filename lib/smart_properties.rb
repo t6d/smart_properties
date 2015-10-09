@@ -108,15 +108,13 @@ module SmartProperties
   # @param [Hash] attrs the set of attributes that is used for initialization
   #
   def initialize(*args, &block)
-    properties = self.class.properties.to_hash
-
     attrs = args.last.is_a?(Hash) ? args.pop : {}
-    attrs, opts = attrs.partition { |key, value| properties.key?(key) }.map { |array| Hash[array] }
+    super(*args)
 
-    opts.empty? ? super(*args) : super(*args.push(opts))
+    properties = self.class.properties.to_hash
+    missing_properties = []
 
     # Set values
-    missing_properties = []
     properties.each do |name, property|
       if attrs.key?(name)
         property.set(self, attrs[name])
