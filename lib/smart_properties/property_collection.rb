@@ -9,28 +9,38 @@ module SmartProperties
         ancestor.ancestors.include?(SmartProperties) && ancestor != SmartProperties
       end
 
-      parent.nil? ? new : new(parent.properties)
+      if parent.nil?
+        new
+      else
+        parent.properties.register(collection = new)
+        collection
+      end
     end
 
-    def initialize(parent = nil)
-      @parent = parent
+    def initialize
       @collection = {}
+      @collection_with_parent_collection = {}
+      @children = []
     end
 
     def []=(name, value)
+      name = name.to_s
       collection[name] = value
+      collection_with_parent_collection[name] = value
+      notify_children
+      value
     end
 
     def [](name)
-      collection_with_parent_collection[name]
+      collection_with_parent_collection[name.to_s]
     end
 
     def key?(name)
-      collection_with_parent_collection.key?(name)
+      collection_with_parent_collection.key?(name.to_s)
     end
 
     def keys
-      collection_with_parent_collection.keys
+      collection_with_parent_collection.keys.map(&:to_sym)
     end
 
     def values
@@ -38,19 +48,34 @@ module SmartProperties
     end
 
     def each(&block)
-      collection_with_parent_collection.each(&block)
+      return to_enum(:each) if block.nil?
+      collection_with_parent_collection.each { |name, value| block.call([name.to_sym, value]) }
     end
 
     def to_hash
-      collection_with_parent_collection.dup
+      Hash[each.to_a]
+    end
+
+    def register(child)
+      children.push(child)
+      child.refresh(collection_with_parent_collection)
+      nil
     end
 
     protected
 
+    attr_accessor :children
     attr_accessor :collection
+    attr_accessor :collection_with_parent_collection
 
-    def collection_with_parent_collection
-      parent.nil? ? collection : parent.collection_with_parent_collection.merge(collection)
+    def notify_children
+      @children.each { |child| child.refresh(collection_with_parent_collection) }
+    end
+
+    def refresh(parent_collection)
+      @collection_with_parent_collection = parent_collection.merge(collection)
+      notify_children
+      nil
     end
   end
 end

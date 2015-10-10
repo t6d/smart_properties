@@ -1,5 +1,6 @@
 require 'bundler/setup'
 require 'rspec'
+require 'pry'
 
 require 'smart_properties'
 
