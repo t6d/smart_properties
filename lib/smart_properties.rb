@@ -108,34 +108,37 @@ module SmartProperties
   # @param [Hash] attrs the set of attributes that is used for initialization
   #
   def initialize(*args, &block)
-    properties = self.class.properties.to_hash
+    attrs = args.last.is_a?(Hash) ? args.pop.dup : {}
+    properties = self.class.properties
 
-    attrs = args.last.is_a?(Hash) ? args.pop : {}
-    attrs, opts = attrs.partition { |key, value| properties.key?(key) }.map { |array| Hash[array] }
-
-    opts.empty? ? super(*args) : super(*args.push(opts))
+    # Track missing properties
+    missing_properties = []
 
     # Set values
-    missing_properties = []
     properties.each do |name, property|
       if attrs.key?(name)
-        property.set(self, attrs[name])
+        property.set(self, attrs.delete(name))
+      elsif attrs.key?(name.to_s)
+        property.set(self, attrs.delete(name.to_s))
       else
         missing_properties.push(property)
       end
     end
 
+    # Call the super constructor and forward unprocessed arguments
+    attrs.empty? ? super(*args) : super(*args.push(attrs))
+
     # Execute configuration block
     block.call(self) if block
 
     # Set default values for missing properties
-    missing_properties.each { |property| property.set_default(self) }
+    missing_properties.delete_if { |property| property.set_default(self) }
 
-    # Check presence of all required properties
-    faulty_properties = properties.select { |_, property| property.missing?(self) }
-    unless faulty_properties.empty?
-      raise SmartProperties::InitializationError.new(self, faulty_properties.values)
-    end
+    # Recheck - cannot be done while assigning default values because
+    # one property might depend on the default value of another property
+    missing_properties.delete_if { |property| property.present?(self) || property.optional?(self) }
+
+    raise SmartProperties::InitializationError.new(self, missing_properties) unless missing_properties.empty?
   end
 end
 

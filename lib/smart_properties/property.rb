@@ -44,8 +44,16 @@ module SmartProperties
       @required.kind_of?(Proc) ? scope.instance_exec(&@required) : !!@required
     end
 
+    def optional?(scope)
+      !required?(scope)
+    end
+
     def missing?(scope)
-      required?(scope) && null_object?(get(scope))
+      required?(scope) && !present?(scope)
+    end
+
+    def present?(scope)
+      !null_object?(get(scope))
     end
 
     def convert(scope, value)
@@ -99,10 +107,13 @@ module SmartProperties
     end
 
     def set_default(scope)
-      if null_object?(get(scope))
-        default_value = default(scope)
-        set(scope, default_value) unless null_object?(default_value)
-      end
+      return false if present?(scope)
+
+      default_value = default(scope)
+      return false if null_object?(default_value)
+
+      set(scope, default_value)
+      true
     end
 
     def get(scope)

@@ -144,6 +144,16 @@ RSpec.describe SmartProperties, 'intheritance' do
           expect(instance.subsubtitle).to eq('some subsubtitle')
         end
 
+        it 'should not accidentally forward attributes as options because the keys where strings' do
+          attributes = {'title' => 'some title', 'subtitle' => 'some subtitle', 'subsubtitle' => "some subsubtitle", "answer" => 42}
+          instance = subsubsection.new('some content', attributes)
+          expect(instance.content).to eq('some content')
+          expect(instance.title).to eq('some title')
+          expect(instance.subtitle).to eq('some subtitle')
+          expect(instance.subsubtitle).to eq('some subsubtitle')
+          expect(instance.options).to eq({"answer" => 42})
+        end
+
         it 'should forward keyword arguments that do not correspond to a property to the super class constructor' do
           instance = subsubsection.new('some content', answer: 42)
           expect(instance.options).to eq({answer: 42})
