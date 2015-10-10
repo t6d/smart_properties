@@ -123,6 +123,13 @@ RSpec.describe SmartProperties do
         expect(instance.title).to eq('bacon')
         expect(instance[:title]).to eq('bacon')
       end
+
+      it "should have the title specified in the corresponding attributes hash that uses strings as keys" do
+        attributes = {"title" => double(to_title: 'bacon')}
+        instance = klass.new(attributes)
+        expect(instance.title).to eq('bacon')
+        expect(instance[:title]).to eq('bacon')
+      end
     end
 
     context "an instance of this class when initialized with a block" do
