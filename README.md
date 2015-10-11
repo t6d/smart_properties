@@ -1,4 +1,4 @@
-# Smartproperties
+# SmartProperties
 
 Ruby accessors on steroids.
 
@@ -61,34 +61,43 @@ require 'smart_properties'
 class Message
   include SmartProperties
 
-  property :subject,  :converts => :to_s,
-                      :required => true
+  property :subject,  converts: :to_s,
+                      required: true
 
-  property :body,     :converts => :to_s
+  property :body,     converts: :to_s
 
-  property :priority, :converts => :to_sym,
-                      :accepts  => [:low, :normal, :high],
-                      :default  => :normal,
-                      :required => true
+  property :priority, converts: :to_sym,
+                      accepts: [:low, :normal, :high],
+                      default: :normal,
+                      required: true
 end
 ```
 
 Creating an instance of this class without specifying any attributes will
-result in an `ArgumentError` telling you to specify the required property
-`subject`.
+result in an `SmartProperties::InitializationError` telling you to specify the
+required property `subject`.
 
 ```ruby
-Message.new # => raises ArgumentError, "Message requires the property subject to be set"
+Message.new # => raises SmartProperties::InitializationError, "Message requires the following properties to be set: subject"
 ```
 
-Providing the constructor with a title but with an invalid value for the
-property `priority` will also result in an `ArgumentError` telling you to
-provide a proper value for the property `priority`.
+Creating an instance of this class with all required properties but then
+setting the property `priority` to an invalid value will also result in an
+`SmartProperties::InvalidValueError`. Since the property is required, assigning
+`nil` is also prohibited and will result in a
+`SmartProperties::MissingValueError`. All errors `SmartProperties` raises are
+subclasses of `ArgumentError`.
 
 ```ruby
-m = Message.new :subject => 'Lorem ipsum'
+m = Message.new subject: 'Lorem ipsum'
 m.priority # => :normal
-m.priority = :urgent # => raises ArgumentError, Message does not accept :urgent as value for the property priority
+
+begin
+  m.priority = :urgent
+rescue ArgumentError => error
+  error.class # => raises SmartProperties::InvalidValueError
+  error.message # => "Message does not accept :urgent as value for the property priority"
+end
 ```
 
 Next, we discuss the various configuration options `SmartProperties` provide.
@@ -110,7 +119,7 @@ to implement a property that automatically converts all given input to a
 
 ```ruby
 class Article
-  property :title, :converts => :to_s
+  property :title, converts: :to_s
 end
 ```
 
@@ -122,7 +131,7 @@ converts all given input to a slug representation.
 
 ```ruby
 class Article
-  property :slug, :converts => lambda { |slug| slug.downcase.gsub(/\s+/, '-').gsub(/\W/, '') }
+  property :slug, converts: lambda { |slug| slug.downcase.gsub(/\s+/, '-').gsub(/\W/, '') }
 end
 ```
 
@@ -136,7 +145,7 @@ of type `String` as input.
 
 ```ruby
 class Article
-  property :title, :accepts => String
+  property :title, accepts: String
 end
 ```
 
@@ -146,7 +155,7 @@ example below shows how to implement a property that only accepts `true` or
 
 ```ruby
 class Article
-  property :published, :accepts => [true, false]
+  property :published, accepts: [true, false]
 end
 ```
 
@@ -158,7 +167,7 @@ only accepts values which match the given regular expression.
 
 ```ruby
 class Article
-  property :title, :accepts => lambda { |title| /^Lorem \w+$/ =~ title }
+  property :title, accepts: lambda { |title| /^Lorem \w+$/ =~ title }
 end
 ```
 
@@ -171,12 +180,12 @@ default value.
 
 ```ruby
 class Article
-  property :id, :default => 42
+  property :id, default: 42
 end
 ```
 
 Default values can also be specified using blocks which are evaluated at
-runtime.
+runtime and only if no value was supplied.
 
 #### Presence checking
 
@@ -187,7 +196,7 @@ how to implement a property that may not be `nil`.
 
 ```ruby
 class Article
-  property :title, :required => true
+  property :title, required: true
 end
 ```
 
@@ -201,6 +210,35 @@ class Person
   property :name, required: lambda { not anonymous }
   property :anonymous, required: true, default: true, accepts: [true, false]
 end
+```
+
+### Constructor argument forwarding
+
+The `SmartProperties` initializer forwards anything to the super constructor
+it does not process itself. This is true for all positional arguments
+and those keyword arguments that do not correspond to a property. The example
+below demonstrates how Ruby's `SimpleDelegator` in conjunction with
+`SmartProperties` can be used to quickly construct a very flexible presenter.
+
+```ruby
+class PersonPresenter < SimpleDelegator
+  include SmartProperties
+  property :name_formatter, accepts: Proc,
+                            required: true,
+                            default: lambda { |p| "#{p.firstname} #{p.lastname}" }
+
+  def full_name
+    name_formatter.call(self)
+  end
+end
+
+person = OpenStruct.new(firstname: "John", lastname: "Doe")
+presenter = PersonPresenter.new(person)
+presenter.full_name # => "John Doe"
+
+# Changing the format is easy
+presenter.name_formatter = lambda { |p| "#{p.lastename}, #{p.firstname}" }
+presenter.full_name # => "Doe, John"
 ```
 
 ## Contributing
