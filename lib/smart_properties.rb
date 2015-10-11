@@ -21,8 +21,6 @@
 #                           :required => true
 #
 module SmartProperties
-  VERSION = "1.9.0"
-
   module ClassMethods
     ##
     # Returns a class's smart properties. This includes the properties that
@@ -145,3 +143,4 @@ end
 require_relative 'smart_properties/property_collection'
 require_relative 'smart_properties/property'
 require_relative 'smart_properties/errors'
+require_relative 'smart_properties/version'
