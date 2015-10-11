@@ -7,7 +7,7 @@ RSpec.describe SmartProperties, 'default values' do
     context "an instance of this class" do
       it "should evaluate the lambda in its own scope and thus differ from every other instance" do
         first_instance, second_instance = klass.new, klass.new
-        expect(klass.new.id).to_not eq(klass.new.id)
+        expect(first_instance.id).to_not eq(second_instance.id)
       end
     end
   end

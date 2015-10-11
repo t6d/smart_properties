@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe SmartProperties, "property collection caching:" do
+RSpec.describe SmartProperties, "property collection caching:" do
   specify "SmartProperty enabled objects should be extendable at runtime" do
     base_class = DummyClass.new { property :title }
     subclass = DummyClass.new(base_class) { property :body }
