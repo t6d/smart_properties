@@ -1,8 +1,0 @@
-rvm:
-  - 2.2.0
-  - 1.9.3
-  - rbx-2
-  - ruby-head
-  - jruby-head
-
-bundler_args: --without documentation
