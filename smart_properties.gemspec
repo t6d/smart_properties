@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require_relative 'lib/smart_properties/version'
+require File.expand_path('../lib/smart_properties/version', __FILE__)
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Konstantin Tennhard"]
