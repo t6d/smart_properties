@@ -35,19 +35,31 @@ module SmartProperties
 
     def initialize(sender, property, value)
       @value = value
+
       super(
         sender,
         property,
-        "%s does not accept %s as value for the property %s" % [
+        "%s does not accept %s as value for the property %s. Only accepts: %s" % [
           sender.class.name,
           value.inspect,
-          property.name
+          property.name,
+          acceptor_message(sender, property)
         ]
       )
     end
 
     def to_hash
       Hash[property.name, "does not accept %s as value" % value.inspect]
+    end
+
+    private
+
+    def acceptor_message(sender, property)
+      acceptor = sender.class.properties[property.name].accepter
+      if acceptor.is_a?(Proc)
+        return "Values passing lambda defined in #{acceptor.source_location.join(' at line ')}"
+      end
+      acceptor
     end
   end
 
