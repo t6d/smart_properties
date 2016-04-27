@@ -109,7 +109,7 @@ RSpec.describe SmartProperties, 'acceptance checking' do
 
       it 'should give the user the location of the proc determining what it accepts on InvalidValueError' do
         exception = SmartProperties::InvalidValueError
-        message = /Values passing lambda defined in \/Users\/mallen\/dev\/smart_properties\/spec\/acceptance_checking_spec\.rb at line 85/
+        message = /spec\/acceptance_checking_spec\.rb at line 85/
 
         expect { klass.new license_plate: 'slurp' }.to raise_error(exception, message)
       end
