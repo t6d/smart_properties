@@ -7,8 +7,9 @@ module SmartProperties
     module IndexMethods
       def [](name)
         return if name.nil?
-        name &&= name.to_sym
-        public_send(name) if self.class.properties.key?(name)
+        name = name.to_sym
+        reader = self.class.properties[name].reader
+        public_send(reader) if self.class.properties.key?(name)
       end
 
       def []=(name, value)
@@ -20,6 +21,7 @@ module SmartProperties
     attr_reader :name
     attr_reader :converter
     attr_reader :accepter
+    attr_reader :reader
     attr_reader :instance_variable_name
 
     def self.define(scope, name, options = {})
@@ -34,6 +36,8 @@ module SmartProperties
       @converter = attrs.delete(:converts)
       @accepter  = attrs.delete(:accepts)
       @required  = attrs.delete(:required)
+      @reader    = attrs.delete(:reader)
+      @reader    ||= @name
 
       @instance_variable_name = :"@#{name}"
 
@@ -101,7 +105,9 @@ module SmartProperties
           m
         end
 
-      scope.send(:attr_reader, name)
+      scope.send(:define_method, reader) do
+        property.get(self)
+      end
       scope.send(:define_method, :"#{name}=") do |value|
         property.set(self, value)
       end
