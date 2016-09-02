@@ -43,7 +43,7 @@ module SmartProperties
           sender.class.name,
           value.inspect,
           property.name,
-          acceptor_message(sender, property)
+          accepter_message(sender, property)
         ]
       )
     end
@@ -54,12 +54,12 @@ module SmartProperties
 
     private
 
-    def acceptor_message(sender, property)
-      acceptor = sender.class.properties[property.name].accepter
-      if acceptor.is_a?(Proc)
-        return "Values passing lambda defined in #{acceptor.source_location.join(' at line ')}"
+    def accepter_message(sender, property)
+      accepter = property.accepter
+      if accepter.is_a?(Proc)
+        return "Values passing lambda defined in #{accepter.source_location.join(' at line ')}"
       end
-      acceptor
+      accepter
     end
   end
 
