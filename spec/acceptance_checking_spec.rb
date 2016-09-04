@@ -40,6 +40,45 @@ RSpec.describe SmartProperties, 'acceptance checking' do
     end
   end
 
+  context "when used to build a class that has a property called :new that accepts a Boolean" do
+    subject(:klass) { DummyClass.new { property :new, accepts: Boolean } }
+
+    context "an instance of this class" do
+      subject(:instance) { klass.new }
+
+      it "should allow to set true as value for new" do
+        expect { instance.new = true }.to_not raise_error
+        expect { instance[:new] = true }.to_not raise_error
+      end
+
+      it "should allow to set false as value for new" do
+        expect { instance.new = false }.to_not raise_error
+        expect { instance[:new] = false }.to_not raise_error
+      end
+
+      it "should not allow to set :maybe as value for new" do
+        exception = SmartProperties::InvalidValueError
+        message =  /Dummy does not accept \:maybe as value for the property new/
+        further_expectations = lambda do |error|
+          expect(error.to_hash[:new]).to eq('does not accept :maybe as value')
+        end
+
+        expect { klass.new new: :maybe }.to raise_error(exception, message, &further_expectations)
+        expect { klass.new { |i| i.new = :maybe } }.to raise_error(exception, message, &further_expectations)
+
+        expect { instance.new = :maybe }.to raise_error(exception, message, &further_expectations)
+        expect { instance[:new] = :maybe }.to raise_error(exception, message, &further_expectations)
+      end
+
+      it 'should give the user a list of what it accepts on InvalidValueError' do
+        exception = SmartProperties::InvalidValueError
+        message = /Only accepts\: \[true, false\]/
+
+        expect { klass.new new: :maybe }.to raise_error(exception, message)
+      end
+    end
+  end
+
   context "when used to build a class that has a property called :title that accepts either a String or a Symbol" do
     subject(:klass) { DummyClass.new { property :title, accepts: [String, Symbol] } }
 
@@ -109,7 +148,7 @@ RSpec.describe SmartProperties, 'acceptance checking' do
 
       it 'should give the user the location of the proc determining what it accepts on InvalidValueError' do
         exception = SmartProperties::InvalidValueError
-        message = /spec\/acceptance_checking_spec\.rb at line 85/
+        message = /spec\/acceptance_checking_spec\.rb at line 124/
 
         expect { klass.new license_plate: 'slurp' }.to raise_error(exception, message)
       end

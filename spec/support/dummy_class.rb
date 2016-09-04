@@ -6,4 +6,3 @@ class << (DummyClass = BasicObject.new)
     c
   end
 end
-
