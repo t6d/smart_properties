@@ -212,6 +212,21 @@ class Person
 end
 ```
 
+#### Custom readers
+
+In Ruby, predicate methods by convention end with a `?`.
+This convention is violated in the example above, but can easily be fixed by supplying a custom `reader` name:
+
+```ruby
+class Person
+  property :name, required: lambda { not anonymous }
+  property :anonymous, required: true, default: true, accepts: [true, false], reader: :anonymous?
+end
+```
+
+To ensure backwards compatibility, boolean properties do not automatically change their reader name.
+It is thus your responsibility to configure the property properly.
+
 ### Constructor argument forwarding
 
 The `SmartProperties` initializer forwards anything to the super constructor
