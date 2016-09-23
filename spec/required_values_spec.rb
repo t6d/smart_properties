@@ -39,6 +39,44 @@ RSpec.describe SmartProperties do
     end
   end
 
+  context "when building a class that has a property! which is required and has no default" do
+    subject(:klass) { DummyClass.new { property! :title } }
+
+    context 'an instance of this class' do
+      it 'should have the correct title when provided with a title during initialization' do
+        instance = klass.new title: 'Lorem Ipsum'
+        expect(instance.title).to eq('Lorem Ipsum')
+        expect(instance[:title]).to eq('Lorem Ipsum')
+
+        instance = klass.new { |i| i.title = 'Lorem Ipsum' }
+        expect(instance.title).to eq('Lorem Ipsum')
+        expect(instance[:title]).to eq('Lorem Ipsum')
+      end
+
+      it "should raise an error stating that required properties are missing when initialized without a title" do
+        exception = SmartProperties::InitializationError
+        message = "Dummy requires the following properties to be set: title"
+        further_expectations = lambda { |error| expect(error.to_hash[:title]).to eq('must be set') }
+
+        expect { klass.new }.to raise_error(exception, message, &further_expectations)
+        expect { klass.new {} }.to raise_error(exception, message, &further_expectations)
+      end
+
+      it "should not allow to set nil as the property's value" do
+        instance = klass.new title: 'Lorem Ipsum'
+
+        exception = SmartProperties::MissingValueError
+        message = "Dummy requires the property title to be set"
+        further_expectations = lambda do |error|
+          expect(error.to_hash[:title]).to eq('must be set')
+        end
+
+        expect { instance.title = nil }.to raise_error(exception, message, &further_expectations)
+        expect { instance[:title] = nil }.to raise_error(exception, message, &further_expectations)
+      end
+    end
+  end
+
   context "when building a class that has a property name which is only required if the property anonymous is set to false" do
     subject(:klass) do
       DummyClass.new do
