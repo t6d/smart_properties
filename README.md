@@ -200,7 +200,7 @@ class Article
 end
 ```
 
-Alternatively you can also use the `property!` method .
+Alternatively you can also use the `property!` method.
 
 ```ruby
 class Article
