@@ -200,6 +200,14 @@ class Article
 end
 ```
 
+Alternatively you can also use the `property!` method .
+
+```ruby
+class Article
+  property! :title
+end
+```
+
 The decision whether or not a property is required can also be delayed and
 evaluated at runtime by providing a block instead of a boolean value. The
 example below shows how to implement a class that has two properties, `name`
