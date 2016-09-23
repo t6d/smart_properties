@@ -83,6 +83,12 @@ module SmartProperties
       properties[name] = Property.define(self, name, options)
     end
     protected :property
+
+    def property!(name, options = {})
+      options[:required] = true
+      property(name, options)
+    end
+    protected :property!
   end
 
   class << self
