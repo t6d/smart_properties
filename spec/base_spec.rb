@@ -19,6 +19,21 @@ RSpec.describe SmartProperties do
         expect { instance = klass.new(title: BasicObject) }.to_not raise_error
       end
     end
+
+    context "the initializer" do
+      it "should raise an ConstructorArgumentForwardingError if provided with an additional positional argument" do
+        unexpected_argument = double("unexpected argument")
+        expect { klass.new(unexpected_argument) }
+          .to raise_error(SmartProperties::ConstructorArgumentForwardingError, /Forwarding the following positional argument failed:.*unexpected argument.*/)
+      end
+
+      it "should raise an ConstructorArgumentForwardingError if provided with unknown keyword arguments" do
+        unexpected_argument1 = double("unexpected argument")
+        unexpected_argument2 = double("unexpected argument")
+        expect { klass.new(first_arg: unexpected_argument1, second_arg: unexpected_argument2) }
+            .to raise_error(SmartProperties::ConstructorArgumentForwardingError, /Forwarding the following 2 keyword arguments failed: first_arg: .*unexpected argument.*, second_arg: .*unexpected argument.*/)
+      end
+    end
   end
 
   context "when used to build a class that has a property called title that utilizes the full feature set of SmartProperties" do

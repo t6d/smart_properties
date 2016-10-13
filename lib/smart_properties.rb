@@ -107,9 +107,14 @@ module SmartProperties
 
   ##
   # Implements a key-value enabled constructor that acts as default
-  # constructor for all {SmartProperties}-enabled classes.
+  # constructor for all {SmartProperties}-enabled classes. Positional arguments
+  # or keyword arguments that do not correspond to a property are forwarded to
+  # the super class constructor.
   #
   # @param [Hash] attrs the set of attributes that is used for initialization
+  #
+  # @raise [SmartProperties::ConstructorArgumentForwardingError] when unknown arguments were supplied that could not be processed by the super class initializer either.
+  # @raise [SmartProperties::InitializationError] when incorrect values were supplied or required values weren't been supplied.
   #
   def initialize(*args, &block)
     attrs = args.last.is_a?(Hash) ? args.pop.dup : {}
@@ -130,7 +135,11 @@ module SmartProperties
     end
 
     # Call the super constructor and forward unprocessed arguments
-    attrs.empty? ? super(*args) : super(*args.push(attrs))
+    begin
+      attrs.empty? ? super(*args) : super(*args.dup.push(attrs))
+    rescue ArgumentError
+      raise SmartProperties::ConstructorArgumentForwardingError.new(args, attrs)
+    end
 
     # Execute configuration block
     block.call(self) if block
