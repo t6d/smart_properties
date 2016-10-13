@@ -13,6 +13,35 @@ module SmartProperties
     end
   end
 
+  class ConstructorArgumentForwardingError < Error
+    def initialize(positional_arguments, keyword_arguments)
+      argument_description = [
+        generate_description("positional", positional_arguments.count),
+        generate_description("keyword", keyword_arguments.count)
+      ].compact
+
+      arguments = positional_arguments + keyword_arguments.map { |name, value| "#{name}: #{value}" }
+
+      super "Forwarding the following %s failed: %s" % [
+        argument_description.join(" and "),
+        arguments.join(", ")
+      ]
+    end
+
+    private
+
+    def generate_description(argument_type, argument_number)
+      case argument_number
+      when 0
+        nil
+      when 1
+        "#{argument_type} argument"
+      else
+        "#{argument_number} #{argument_type} arguments"
+      end
+    end
+  end
+
   class MissingValueError < AssignmentError
     def initialize(sender, property)
       super(
