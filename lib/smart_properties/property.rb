@@ -132,6 +132,18 @@ module SmartProperties
       scope.instance_variable_get(instance_variable_name)
     end
 
+    def to_h
+      {
+        accepter: @accepter,
+        converter: @converter,
+        default: @default,
+        instance_variable_name: @instance_variable_name,
+        name: @name,
+        reader: @reader,
+        required: @required
+      }
+    end
+
     private
 
     def null_object?(object)
