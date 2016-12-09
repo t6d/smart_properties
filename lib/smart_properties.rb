@@ -69,6 +69,8 @@ module SmartProperties
     #   specifies the default value of the property
     # @option options [true, false] :required
     #   specifies whether or not this property is required
+    # @option options [Array] :responds_to
+    #   Array of Symbols specifying the methods that are required for the property
     #
     # @return [Property] The defined property.
     #

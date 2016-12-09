@@ -1,3 +1,4 @@
+require 'byebug'
 module SmartProperties
   class Property
     MODULE_REFERENCE = :"@_smart_properties_method_scope"
@@ -22,6 +23,7 @@ module SmartProperties
     attr_reader :converter
     attr_reader :accepter
     attr_reader :reader
+    attr_reader :responder
     attr_reader :instance_variable_name
 
     def self.define(scope, name, options = {})
@@ -36,6 +38,7 @@ module SmartProperties
       @converter = attrs.delete(:converts)
       @accepter  = attrs.delete(:accepts)
       @required  = attrs.delete(:required)
+      @responder = attrs.delete(:responds_to)
       @reader    = attrs.delete(:reader)
       @reader    ||= @name
 
@@ -83,12 +86,21 @@ module SmartProperties
       end
     end
 
+    def responds_to?(value, scope)
+      return true if null_object?(value)
+      return true unless responder
+      methods = value.methods
+      responder.each { |method| return false unless methods.include? method }
+      true
+    end
+
     def prepare(scope, value)
       required = required?(scope)
       raise MissingValueError.new(scope, self) if required && null_object?(value)
       value = convert(scope, value)
       raise MissingValueError.new(scope, self) if required && null_object?(value)
       raise InvalidValueError.new(scope, self, value) unless accepts?(value, scope)
+      raise InvalidValueError.new(scope, self, value) unless responds_to?(value, scope)
       value
     end
 
