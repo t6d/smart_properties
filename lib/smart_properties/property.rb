@@ -65,7 +65,13 @@ module SmartProperties
     def convert(scope, value)
       return value unless converter
       return value if null_object?(value)
-      scope.instance_exec(value, &converter)
+
+      case converter
+      when Symbol
+        converter.to_proc.call(value)
+      else
+        scope.instance_exec(value, &converter)
+      end
     end
 
     def default(scope)
