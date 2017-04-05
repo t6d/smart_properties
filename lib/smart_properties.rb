@@ -102,6 +102,9 @@ module SmartProperties
     #
     def included(base)
       base.extend(ClassMethods)
+
+      # Allows `accepts: Boolean` syntax.
+      base.superclass.send(:const_set, "Boolean", [true, false])
     end
   end
 
