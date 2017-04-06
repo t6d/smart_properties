@@ -2,22 +2,6 @@ module SmartProperties
   class Property
     MODULE_REFERENCE = :"@_smart_properties_method_scope"
 
-    # Defines the two index methods #[] and #[]=. This module will be included
-    # in the SmartProperties method scope.
-    module IndexMethods
-      def [](name)
-        return if name.nil?
-        name = name.to_sym
-        reader = self.class.properties[name].reader
-        public_send(reader) if self.class.properties.key?(name)
-      end
-
-      def []=(name, value)
-        return if name.nil?
-        public_send(:"#{name.to_sym}=", value) if self.class.properties.key?(name)
-      end
-    end
-
     attr_reader :name
     attr_reader :converter
     attr_reader :accepter
@@ -105,7 +89,7 @@ module SmartProperties
         if klass.instance_variable_defined?(MODULE_REFERENCE)
           klass.instance_variable_get(MODULE_REFERENCE)
         else
-          m = Module.new { include IndexMethods }
+          m = Module.new
           klass.send(:include, m)
           klass.instance_variable_set(MODULE_REFERENCE, m)
           m
