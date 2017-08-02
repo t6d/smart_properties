@@ -220,7 +220,7 @@ class Person
 end
 ```
 
-#### Custom readers
+#### Custom reader naming
 
 In Ruby, predicate methods by convention end with a `?`.
 This convention is violated in the example above, but can easily be fixed by supplying a custom `reader` name:
@@ -234,6 +234,22 @@ end
 
 To ensure backwards compatibility, boolean properties do not automatically change their reader name.
 It is thus your responsibility to configure the property properly.
+
+#### Custom reader implementation
+
+For convenience, it is possible to use the `super` method to access the original reader when overriding a reader.
+This is recommended over direct access to the instance variable.
+
+```ruby
+class Person
+  property :name
+  property! :address
+
+  def name
+    super || address.name
+  end
+end
+```
 
 ### Constructor argument forwarding
 
