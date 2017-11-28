@@ -164,4 +164,34 @@ RSpec.describe SmartProperties do
       end
     end
   end
+
+  context "when used to build a class that has a property called relation for an arbitrary Relation class" do
+    class Relation
+      attr_reader :equality_tested
+
+      def initialize
+        @equality_tested = false
+      end
+
+      def ==(_)
+        @equality_tested = true
+        false
+      end
+    end
+
+    subject(:klass) do
+      DummyClass.new do
+        property :relation, accepts: Relation, required: true
+      end
+    end
+
+    context 'with an instance of Relation' do
+      let(:relation) { Relation.new }
+
+      it 'should not execute #== on the object' do
+        instance = klass.new(relation: relation)
+        expect(relation.equality_tested).to eq(false)
+      end
+    end
+  end
 end
