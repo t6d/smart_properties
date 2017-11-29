@@ -1,5 +1,5 @@
 ---
-name: smart-properties2
+name: smart-properties
 up:
 - ruby: 2.4.1
 - bundler
