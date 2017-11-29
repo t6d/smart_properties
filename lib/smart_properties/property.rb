@@ -137,9 +137,7 @@ module SmartProperties
     private
 
     def null_object?(object)
-      return true if object == nil
-      return true if object.nil?
-      false
+      object.nil?
     rescue NoMethodError => error
       # BasicObject does not respond to #nil? by default, so we need to double
       # check if somebody implemented it and it fails internally or if the
