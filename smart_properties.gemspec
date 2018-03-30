@@ -19,6 +19,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = SmartProperties::VERSION
 
+  gem.add_development_dependency "rubocop", "~> 0.50"
   gem.add_development_dependency "rspec", "~> 3.0"
   gem.add_development_dependency "rake", "~> 10.0"
   gem.add_development_dependency "pry"
