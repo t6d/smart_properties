@@ -6,7 +6,9 @@ module SmartProperties
 
     def self.for(scope)
       parent = scope.ancestors[1..-1].find do |ancestor|
-        ancestor.ancestors.include?(SmartProperties) && ancestor != SmartProperties
+        ancestor.ancestors.include?(SmartProperties) &&
+          ancestor != scope &&
+          ancestor != SmartProperties
       end
 
       if parent.nil?
