@@ -26,4 +26,14 @@ RSpec.describe SmartProperties, "property collection caching:" do
     expect(subsubclass.properties.keys - expected_names).to be_empty
     expect(subsubclass.properties.to_hash.keys - expected_names).to be_empty
   end
+
+  specify "a SmartProperty enabled object should not check itself for properties if prepended" do
+    expect do
+      base_class = DummyClass.new {
+        prepend Module.new
+        property :title
+      }
+      expect(base_class.new).to have_smart_property(:title)
+    end.not_to raise_error(SystemStackError)
+  end
 end
