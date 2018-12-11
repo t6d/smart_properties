@@ -171,6 +171,16 @@ class Article
 end
 ```
 
+There are also a set of common validation helpers you may use. These common
+cases are provided to help avoid rewriting validation logic that occurs
+often. These validations can be found in the `SmartProperties::Validations` module.
+
+```ruby
+class Article
+  property :view_count, accepts: Ancestor.must_be(Number)
+end
+```
+
 #### Default values
 
 There is also support for default values. Simply use the `:default`
