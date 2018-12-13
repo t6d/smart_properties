@@ -7,6 +7,7 @@ module SmartProperties
     attr_reader :accepter
     attr_reader :reader
     attr_reader :instance_variable_name
+    attr_reader :read_only
 
     def self.define(scope, name, options = {})
       new(name, options).tap { |p| p.define(scope) }
@@ -21,6 +22,7 @@ module SmartProperties
       @accepter  = attrs.delete(:accepts)
       @required  = attrs.delete(:required)
       @reader    = attrs.delete(:reader)
+      @read_only = attrs.delete(:read_only)
       @reader    ||= @name
 
       @instance_variable_name = :"@#{name}"
@@ -44,6 +46,10 @@ module SmartProperties
 
     def present?(scope)
       !null_object?(get(scope))
+    end
+
+    def allow_write?
+      !read_only
     end
 
     def convert(scope, value)
@@ -98,8 +104,11 @@ module SmartProperties
       scope.send(:define_method, reader) do
         property.get(self)
       end
-      scope.send(:define_method, :"#{name}=") do |value|
-        property.set(self, value)
+
+      if allow_write?
+        scope.send(:define_method, :"#{name}=") do |value|
+          property.set(self, value)
+        end
       end
     end
 
