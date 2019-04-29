@@ -48,6 +48,11 @@ module SmartProperties
       !null_object?(get(scope))
     end
 
+    def writable?
+      return true if @writable.nil?
+      @writable
+    end
+
     def convert(scope, value)
       return value unless converter
       return value if null_object?(value)
@@ -101,7 +106,7 @@ module SmartProperties
         property.get(self)
       end
 
-      if writable
+      if writable?
         scope.send(:define_method, :"#{name}=") do |value|
           property.set(self, value)
         end
