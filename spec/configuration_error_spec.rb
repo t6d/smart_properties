@@ -13,5 +13,19 @@ RSpec.describe SmartProperties, 'configuration error' do
 
       expect(&invalid_property_definition).to raise_error(SmartProperties::ConfigurationError, "SmartProperties do not support the following configuration options: invalid_option_1, invalid_option_2, invalid_option_3.")
     end
+
+    it "should not accept default values that may be mutated" do
+      invalid_property_definition = lambda do
+        klass.class_eval do
+          property :title, default: []
+        end
+      end
+
+      expect(&invalid_property_definition).to(
+        raise_error(SmartProperties::ConfigurationError,
+          "Default attribute value [] cannot be specified as literal, "\
+            "use the syntax `default: -> { ... }` instead.")
+      )
+    end
   end
 end
