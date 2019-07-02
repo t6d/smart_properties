@@ -48,4 +48,72 @@ RSpec.describe SmartProperties, 'default values' do
       end
     end
   end
+
+  context "when defining a new property with a literal default value" do
+    context 'with a numeric default' do
+      subject(:klass) { DummyClass.new { property :var, default: 123 } }
+
+      it 'accepts the default and returns it' do
+        instance = klass.new
+        expect(instance.var).to(be(123))
+      end
+    end
+
+    context 'with a string default' do
+      DEFAULT_VALUE = 'a string'
+      subject(:klass) { DummyClass.new { property :var, default: DEFAULT_VALUE } }
+
+      it 'accepts the default and returns it' do
+        instance = klass.new
+        expect(instance.var).to(eq(DEFAULT_VALUE))
+      end
+
+      it 'returns a copy of the string' do
+        instance = klass.new
+        expect(instance.var).to_not(be(DEFAULT_VALUE))
+      end
+
+      it 'mutating the instance variable does not mutate the original' do
+        instance = klass.new
+        instance.var[0] = 'o'
+        expect(DEFAULT_VALUE).to(eq('a string'))
+      end
+    end
+
+    context 'with a range default' do
+      subject(:klass) { DummyClass.new { property :var, default: 1..2 } }
+
+      it 'accepts the default and returns it' do
+        instance = klass.new
+        expect(instance.var).to(eq(1..2))
+      end
+    end
+
+    context 'with a true default' do
+      subject(:klass) { DummyClass.new { property :var, default: true } }
+
+      it 'accepts the default and returns it' do
+        instance = klass.new
+        expect(instance.var).to(be(true))
+      end
+    end
+
+    context 'with a false default' do
+      subject(:klass) { DummyClass.new { property :var, default: false } }
+
+      it 'accepts the default and returns it' do
+        instance = klass.new
+        expect(instance.var).to(be(false))
+      end
+    end
+
+    context 'with a symbol default' do
+      subject(:klass) { DummyClass.new { property :var, default: :foo } }
+
+      it 'accepts the default and returns it' do
+        instance = klass.new
+        expect(instance.var).to(be(:foo))
+      end
+    end
+  end
 end

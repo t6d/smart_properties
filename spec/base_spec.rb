@@ -41,7 +41,7 @@ RSpec.describe SmartProperties do
       default_title = double(to_title: 'chunky')
 
       DummyClass.new do
-        property :title, converts: :to_title, accepts: String, required: true, default: default_title
+        property :title, converts: :to_title, accepts: String, required: true, default: -> { default_title }
       end
     end
 
@@ -49,7 +49,7 @@ RSpec.describe SmartProperties do
 
     it "should return a property's configuration with #to_h" do
       expect(klass.properties.values.first.to_h).to match(
-        accepter: String, converter: :to_title, default: an_instance_of(RSpec::Mocks::Double),
+        accepter: String, converter: :to_title, default: an_instance_of(Proc),
         instance_variable_name: :@title, name: :title, reader: :title, required: true
       )
     end
