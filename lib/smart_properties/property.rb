@@ -72,7 +72,11 @@ module SmartProperties
     end
 
     def default(scope)
-      @default.kind_of?(Proc) ? scope.instance_exec(&@default) : @default.dup
+      return scope.instance_exec(&@default) if @default.kind_of?(Proc)
+      return @default.dup unless @default.respond_to?(:duplicable?)
+
+      return @default.dup if @default.duplicable?
+      @default
     end
 
     def accepts?(value, scope)
