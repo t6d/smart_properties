@@ -1,6 +1,9 @@
+require 'forwardable'
+
 module SmartProperties
   class PropertyCollection
     include Enumerable
+    extend Forwardable
 
     attr_reader :parent
 
@@ -45,17 +48,17 @@ module SmartProperties
       collection_with_parent_collection.keys.map(&:to_sym)
     end
 
-    def values
-      collection_with_parent_collection.values
-    end
-
     def each(&block)
       return to_enum(:each) if block.nil?
       collection_with_parent_collection.each { |name, value| block.call([name.to_sym, value]) }
     end
 
+    def to_h
+      each.to_h
+    end
+
     def to_hash
-      Hash[each.to_a]
+      to_h
     end
 
     def register(child)
@@ -63,6 +66,8 @@ module SmartProperties
       child.refresh(collection_with_parent_collection)
       nil
     end
+
+    def_delegators :collection_with_parent_collection, :count, :size, :length, :values
 
     protected
 
