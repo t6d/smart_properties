@@ -1,7 +1,7 @@
 module SmartProperties
   class Property
     MODULE_REFERENCE = :"@_smart_properties_method_scope"
-    ALLOWED_DEFAULT_CLASSES = [Proc, Numeric, String, Range, TrueClass, FalseClass, NilClass, Symbol].freeze
+    ALLOWED_DEFAULT_CLASSES = [Proc, Numeric, String, Range, TrueClass, FalseClass, NilClass, Symbol, Module].freeze
 
     attr_reader :name
     attr_reader :converter
