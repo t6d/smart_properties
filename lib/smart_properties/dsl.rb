@@ -1,5 +1,5 @@
 module SmartProperties
-  module DSL
+  DSL = SmartProperties::Plugin.new(:extend) do
     ##
     # Returns a class's smart properties. This includes the properties that
     # have been defined in the parent classes.
