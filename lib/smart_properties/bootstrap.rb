@@ -1,5 +1,5 @@
 module SmartProperties
-  module Bootstrap
+  Bootstrap = SmartProperties::Plugin.new(:extend) do
     def included(target)
       super
       target.include(SmartProperties)

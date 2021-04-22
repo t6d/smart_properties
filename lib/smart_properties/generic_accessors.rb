@@ -1,5 +1,5 @@
 module SmartProperties
-  module GenericAccessors
+  GenericAccessors = SmartProperties::Plugin.new(:include) do
     def [](name)
       return if name.nil?
       name = name.to_sym

@@ -1,5 +1,5 @@
 module SmartProperties
-  module Initializer
+  Initializer = SmartProperties::Plugin.new(:include) do
     ##
     # Implements a key-value enabled constructor that acts as default
     # constructor for all {SmartProperties}-enabled classes. Positional arguments
