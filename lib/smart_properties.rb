@@ -9,9 +9,9 @@ define_method(:SmartProperties, &Class.new(Module) do
   end
 
   def included(base)
-    base.extend(SmartProperties::DSL)
-    base.extend(SmartProperties::Bootstrap) unless base.is_a?(Class)
-    plugins.each { |plugin| base.include(plugin) }
+    default_plugins = [SmartProperties::DSL]
+    default_plugins << SmartProperties::Bootstrap unless base.is_a?(Class)
+    [*default_plugins, *plugins].each { |plugin| plugin.attach(base) }
   end
 
   def inspect
@@ -60,6 +60,7 @@ SmartProperties = SmartProperties(-> { SmartProperties::Initializer }, -> { Smar
 #
 module SmartProperties; end
 
+require_relative 'smart_properties/plugin'
 require_relative 'smart_properties/dsl'
 require_relative 'smart_properties/bootstrap'
 require_relative 'smart_properties/generic_accessors'
