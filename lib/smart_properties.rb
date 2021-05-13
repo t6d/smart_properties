@@ -9,8 +9,8 @@ define_method(:SmartProperties, &Class.new(Module) do
   end
 
   def included(base)
-    default_plugins = [SmartProperties::DSL]
-    default_plugins << SmartProperties::Bootstrap unless base.is_a?(Class)
+    default_plugins = [SmartProperties::Plugins::DSL]
+    default_plugins << SmartProperties::Plugins::Bootstrap unless base.is_a?(Class)
     [*default_plugins, *plugins].each { |plugin| plugin.attach(base) }
   end
 
@@ -34,7 +34,7 @@ define_method(:SmartProperties, &Class.new(Module) do
   end
 end)
 
-SmartProperties = SmartProperties(-> { SmartProperties::Initializer }, -> { SmartProperties::GenericAccessors })
+SmartProperties = SmartProperties(-> { SmartProperties::Plugins::Initializer }, -> { SmartProperties::Plugins::GenericAccessors })
 
 ##
 # {SmartProperties} can be used to easily build more full-fledged accessors
@@ -61,13 +61,9 @@ SmartProperties = SmartProperties(-> { SmartProperties::Initializer }, -> { Smar
 module SmartProperties; end
 
 require_relative 'smart_properties/plugin'
-require_relative 'smart_properties/dsl'
-require_relative 'smart_properties/bootstrap'
-require_relative 'smart_properties/generic_accessors'
-require_relative 'smart_properties/initializer'
+require_relative 'smart_properties/plugins'
 require_relative 'smart_properties/property_collection'
 require_relative 'smart_properties/property'
 require_relative 'smart_properties/errors'
 require_relative 'smart_properties/version'
 require_relative 'smart_properties/validations'
-require_relative 'smart_properties/plugins'
