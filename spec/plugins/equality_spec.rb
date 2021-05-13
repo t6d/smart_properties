@@ -2,7 +2,7 @@ require 'spec_helper'
 
 RSpec.describe "Equality plugin" do
   SmartPropertiesWithEqualityPlugin = SmartProperties(
-    SmartProperties::Initializer,
+    SmartProperties::Plugins::Initializer,
     SmartProperties::Plugins::Equality
   )
   it "supports comparing objects of the same type that don't have any properties" do
