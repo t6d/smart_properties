@@ -177,7 +177,7 @@ often. These validations can be found in the `SmartProperties::Validations` modu
 
 ```ruby
 class Article
-  property :view_count, accepts: Ancestor.must_be(Number)
+  property :view_count, accepts: Ancestor.must_be(type: Number)
 end
 ```
 
