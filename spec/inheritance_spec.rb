@@ -274,13 +274,13 @@ RSpec.describe SmartProperties, 'intheritance' do
 
       module_singleton_class_ancestors = n.singleton_class.ancestors
 
-      expect(module_singleton_class_ancestors).to include(SmartProperties::DSL)
-      expect(module_singleton_class_ancestors).to include(SmartProperties::Bootstrap)
+      expect(module_singleton_class_ancestors).to include(SmartProperties::Plugins::DSL)
+      expect(module_singleton_class_ancestors).to include(SmartProperties::Plugins::Bootstrap)
 
       singleton_class_ancestors = klass.singleton_class.ancestors
 
-      expect(singleton_class_ancestors).to include(SmartProperties::DSL)
-      expect(singleton_class_ancestors).not_to include(SmartProperties::Bootstrap)
+      expect(singleton_class_ancestors).to include(SmartProperties::Plugins::DSL)
+      expect(singleton_class_ancestors).not_to include(SmartProperties::Plugins::Bootstrap)
     end
 
     it "yields properly ordered properties – child properties have higher precedence than parent properties" do
