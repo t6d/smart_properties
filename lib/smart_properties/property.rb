@@ -157,12 +157,19 @@ module SmartProperties
     rescue NoMethodError => error
       # BasicObject does not respond to #nil? by default, so we need to double
       # check if somebody implemented it and it fails internally or if the
-      # error occured because the method is actually not present. In the former
-      # case, we want to raise the exception because there is something wrong
-      # with the implementation of object#nil?. In the latter case we treat the
-      # object as truthy because we don't know better.
-      raise error if (class << object; self; end).public_instance_methods.include?(:nil?)
-      false
+      # error occured because the method is actually not present.
+      
+      # This is a workaround for the fact that #singleton_class is defined on Object, but not BasicObject.
+      the_singleton_class = (class << object; self; end)
+      
+      if the_singleton_class.public_instance_methods.include?(:nil?)
+        # object defines #nil?, but it raised NoMethodError,
+        # something is wrong with the implementation, so raise the exception.
+        raise error 
+      else
+        # treat the object as truthy because we don't know better.
+        false 
+      end
     end
   end
 end
