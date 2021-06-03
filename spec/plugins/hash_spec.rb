@@ -2,15 +2,7 @@ require 'spec_helper'
 
 HashPlugin = SmartProperties::Plugin.new(:include) do
   def self.without_optionals
-    original_plugin_implementation = self
-
-    SmartProperties::Plugin.new(:include) do
-      include original_plugin_implementation
-
-      define_singleton_method(:included) do |target|
-        original_plugin_implementation.included(target)
-      end
-
+    customize do
       def to_hash
         super.compact
       end
