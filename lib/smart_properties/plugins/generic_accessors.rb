@@ -3,14 +3,13 @@ module SmartProperties
     GenericAccessors = SmartProperties::Plugin.new(:include) do
       def [](name)
         return if name.nil?
-        name = name.to_sym
-        reader = self.class.properties[name].reader
-        public_send(reader) if self.class.properties.key?(name)
+        reader = self.class.properties[name.to_sym]&.reader
+        reader ?  public_send(reader) : super
       end
 
       def []=(name, value)
         return if name.nil?
-        public_send(:"#{name.to_sym}=", value) if self.class.properties.key?(name)
+        self.class.properties.key?(name) ? public_send(:"#{name.to_sym}=", value) : super
       end
     end
   end

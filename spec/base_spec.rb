@@ -98,6 +98,34 @@ RSpec.describe SmartProperties do
         expect(instance.title).to eq('chunky')
         expect(other_instance.title).to eq('Lorem ipsum')
       end
+
+      it "should forward calls to #[] to its super class when the property is not known" do
+        super_klass = Class.new do
+          def [](key)
+            return "chunky" if key == "bacon"
+            raise KeyError, "Unknown key: #{key}"
+          end
+        end
+
+        klass = Class.new(super_klass) do
+          include SmartProperties
+        end
+
+        expect(klass.new["bacon"]).to eq("chunky")
+      end
+
+      it "should forward calls to #[]= to its super class when the property is not known" do
+        klass = Class.new(Hash) do
+          include SmartProperties
+          property :meal, converts: :upcase
+        end
+
+        instance = klass.new
+        instance[:bacon] = "chunky"
+        instance[:meal] = "breakfast"
+        expect(instance[:bacon]).to eq("chunky")
+        expect(instance[:meal]).to eq("BREAKFAST")
+      end
     end
 
     context 'an instance of this class when initialized with a null object' do
