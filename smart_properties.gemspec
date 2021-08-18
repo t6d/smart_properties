@@ -24,6 +24,6 @@ Gem::Specification.new do |gem|
   gem.version       = SmartProperties::VERSION
 
   gem.add_development_dependency "rspec", "~> 3.0"
-  gem.add_development_dependency "rake", "~> 12.0"
+  gem.add_development_dependency "rake", "~> 13.0"
   gem.add_development_dependency "pry"
 end
