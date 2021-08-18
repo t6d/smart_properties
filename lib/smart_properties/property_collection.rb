@@ -5,18 +5,18 @@ module SmartProperties
     attr_reader :parent
 
     def self.for(scope)
-      parent = scope.ancestors[1..-1].find do |ancestor|
+      parents = scope.ancestors[1..-1].select do |ancestor|
         ancestor.ancestors.include?(SmartProperties) &&
           ancestor != scope &&
           ancestor != SmartProperties
       end
 
-      if parent.nil?
-        new
-      else
-        parent.properties.register(collection = new)
-        collection
+      parents.reduce(collection = new) do |previous, current|
+        current.properties.register(previous)
+        current.properties
       end
+
+      collection
     end
 
     def initialize

@@ -91,6 +91,13 @@ module SmartProperties
     protected :property!
   end
 
+  module ModuleMethods
+    def included(target)
+      super
+      target.include(SmartProperties)
+    end
+  end
+
   class << self
     private
 
@@ -102,6 +109,7 @@ module SmartProperties
     #
     def included(base)
       base.extend(ClassMethods)
+      base.extend(ModuleMethods) if base.is_a?(Module)
     end
   end
 
