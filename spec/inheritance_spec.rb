@@ -225,4 +225,34 @@ RSpec.describe SmartProperties, 'intheritance' do
       end
     end
   end
+
+  it "supports multiple inheritance through modules" do
+    m = Module.new do
+      include SmartProperties
+      property :m, default: 1
+    end
+
+    n = Module.new do
+      include SmartProperties
+      property :n, default: 2
+    end
+
+    o = Module.new {}
+
+    klass = Class.new do
+      include m
+      include o
+      include n
+    end
+
+    n.module_eval do
+      property :p, default: 3
+    end
+
+    instance = klass.new
+
+    expect(instance.m).to eq(1)
+    expect(instance.n).to eq(2)
+    expect(instance.p).to eq(3)
+  end
 end
