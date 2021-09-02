@@ -75,7 +75,7 @@ module SmartProperties
     end
 
     def refresh(parent_collection)
-      @collection_with_parent_collection = parent_collection.merge(collection)
+      @collection_with_parent_collection.merge!(parent_collection)
       notify_children
       nil
     end
