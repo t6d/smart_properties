@@ -13,7 +13,7 @@ module SmartProperties
 
       collection = new
 
-      parents.each do |parent|
+      parents.reverse.each do |parent|
         parent.properties.register(collection)
       end
 
