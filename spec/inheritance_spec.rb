@@ -226,43 +226,67 @@ RSpec.describe SmartProperties, 'intheritance' do
     end
   end
 
-  it "supports multiple inheritance through modules" do
-    m = Module.new do
-      include SmartProperties
-      property :m, default: 1
+  context "through modules" do
+    let(:m) do
+      m = Module.new do
+        include SmartProperties
+        property :m, default: 1
+      end
     end
 
-    n = Module.new do
-      include SmartProperties
-      property :n, default: 2
+    let(:n) do
+      n = Module.new do
+        include SmartProperties
+        property :n, default: 2
+      end
     end
 
-    o = Module.new {}
+    it "is supported" do
+      n = self.n
+      m = self.m
+      o = Module.new {}
 
-    klass = Class.new do
-      include m
-      include o
-      include n
+      klass = Class.new do
+        include m
+        include o
+        include n
+      end
+
+      n.module_eval do
+        property :p, default: 3
+      end
+
+      instance = klass.new
+
+      expect(instance.m).to eq(1)
+      expect(instance.n).to eq(2)
+      expect(instance.p).to eq(3)
+
+      expect { klass.new(m: 4, n: 5, p: 6) }.to_not raise_error
     end
 
-    n.module_eval do
-      property :p, default: 3
+    it "yields properly ordered properties – child properties have higher precedence than parent properties" do
+      n = self.n
+      m = self.m
+
+      parent = Class.new do
+        include m
+        include n
+      end
+      expect(parent.new.m).to eq(1)
+
+      child = Class.new(parent) do
+        property :m, default: 0
+      end
+      expect(child.new.m).to eq(0)
+
+      grandchild = Class.new(child)
+      expect(grandchild.new.m).to eq(0)
+
+      grandgrandchild = Class.new(grandchild) do
+        property :m, default: 1000
+      end
+      expect(grandgrandchild.new.m).to eq(1000)
     end
-
-    instance = klass.new
-
-    expect(instance.m).to eq(1)
-    expect(instance.n).to eq(2)
-    expect(instance.p).to eq(3)
-
-    expect { klass.new(m: 4, n: 5, p: 6) }.to_not raise_error
-
-    klass2 = Class.new do
-      include n
-      include m
-    end
-
-    expect { klass.new(m: 4, n: 5, p: 6) }.to_not raise_error
-    expect { klass2.new(m: 4, n: 5, p: 6) }.to_not raise_error
   end
 end
