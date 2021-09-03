@@ -11,9 +11,10 @@ module SmartProperties
           ancestor != SmartProperties
       end
 
-      parents.reduce(collection = new) do |previous, current|
-        current.properties.register(previous)
-        current.properties
+      collection = new
+
+      parents.each do |parent|
+        parent.properties.register(collection)
       end
 
       collection

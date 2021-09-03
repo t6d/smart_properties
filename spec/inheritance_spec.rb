@@ -254,5 +254,15 @@ RSpec.describe SmartProperties, 'intheritance' do
     expect(instance.m).to eq(1)
     expect(instance.n).to eq(2)
     expect(instance.p).to eq(3)
+
+    expect { klass.new(m: 4, n: 5, p: 6) }.to_not raise_error
+
+    klass2 = Class.new do
+      include n
+      include m
+    end
+
+    expect { klass.new(m: 4, n: 5, p: 6) }.to_not raise_error
+    expect { klass2.new(m: 4, n: 5, p: 6) }.to_not raise_error
   end
 end
