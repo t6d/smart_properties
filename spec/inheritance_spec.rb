@@ -265,6 +265,24 @@ RSpec.describe SmartProperties, 'intheritance' do
       expect { klass.new(m: 4, n: 5, p: 6) }.to_not raise_error
     end
 
+    it "always extends module with ModuleMethods but never classes" do
+      n = self.n
+
+      klass = Class.new do
+        include n
+      end
+
+      module_singleton_class_ancestors = n.singleton_class.ancestors
+
+      expect(module_singleton_class_ancestors).to include(SmartProperties::ClassMethods)
+      expect(module_singleton_class_ancestors).to include(SmartProperties::ModuleMethods)
+
+      singleton_class_ancestors = klass.singleton_class.ancestors
+
+      expect(singleton_class_ancestors).to include(SmartProperties::ClassMethods)
+      expect(singleton_class_ancestors).not_to include(SmartProperties::ModuleMethods)
+    end
+
     it "yields properly ordered properties – child properties have higher precedence than parent properties" do
       n = self.n
       m = self.m
