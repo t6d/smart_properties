@@ -109,7 +109,7 @@ module SmartProperties
     #
     def included(base)
       base.extend(ClassMethods)
-      base.extend(ModuleMethods) if base.is_a?(Module)
+      base.extend(ModuleMethods) unless base.is_a?(Class)
     end
   end
 
