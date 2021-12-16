@@ -10,11 +10,11 @@ module SmartProperties
     attr_reader :instance_variable_name
     attr_reader :writable
 
-    def self.define(scope, name, options = {})
-      new(name, options).tap { |p| p.define(scope) }
+    def self.define(scope, name, **options)
+      new(name, **options).tap { |p| p.define(scope) }
     end
 
-    def initialize(name, attrs = {})
+    def initialize(name, **attrs)
       attrs = attrs.dup
 
       @name      = name.to_sym
