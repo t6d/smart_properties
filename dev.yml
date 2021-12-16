@@ -1,7 +1,7 @@
 ---
 name: smart-properties
 up:
-- ruby: 2.4.1
+- ruby: 3.0.3
 - bundler
 commands:
-  test: bundle exec rake test
+  test: bundle exec rake
