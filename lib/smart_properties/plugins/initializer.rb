@@ -22,9 +22,9 @@ module SmartProperties
         # Set values
         properties.each do |name, property|
           if attrs.key?(name)
-            property.set(self, attrs.delete(name))
+            property.runtime.set(self, attrs.delete(name))
           elsif attrs.key?(name.to_s)
-            property.set(self, attrs.delete(name.to_s))
+            property.runtime.set(self, attrs.delete(name.to_s))
           else
             missing_properties.push(property)
           end
@@ -41,11 +41,11 @@ module SmartProperties
         block.call(self) if block
 
         # Set default values for missing properties
-        missing_properties.delete_if { |property| property.set_default(self) }
+        missing_properties.delete_if { |property| property.runtime.set_default(self) }
 
         # Recheck - cannot be done while assigning default values because
         # one property might depend on the default value of another property
-        missing_properties.delete_if { |property| property.present?(self) || property.optional?(self) }
+        missing_properties.delete_if { |property| property.runtime.present?(self) || property.runtime.optional?(self) }
 
         raise SmartProperties::InitializationError.new(self, missing_properties) unless missing_properties.empty?
       end

@@ -84,7 +84,7 @@ module SmartProperties
     private
 
     def accepter_message(sender, property)
-      accepter = property.accepter
+      accepter = property.runtime.accepts
       if accepter.is_a?(Proc)
         return "Values passing lambda defined in #{accepter.source_location.join(' at line ')}"
       end
