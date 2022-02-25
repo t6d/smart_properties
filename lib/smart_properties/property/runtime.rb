@@ -1,5 +1,16 @@
+require_relative "plugin_repository"
+require_relative "base_runtime"
+require_relative "plugins"
+
 module SmartProperties
 	class Property
+    # Runtime = PluginRepository.build_runtime(
+    #   RequiredCheck,
+    #   Conversion,
+    #   RequiredCheck,
+    #   AcceptanceCheck,
+    # )
+
     Runtime = Struct.new(:required, :converts, :accepts, :default, :instance_variable_name, :property, keyword_init: true) do
       def required?(scope)
         required.kind_of?(Proc) ? scope.instance_exec(&required) : !!required
