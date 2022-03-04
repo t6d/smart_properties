@@ -1,14 +1,17 @@
+require_relative "plugin_repository"
+require_relative "base_runtime"
+require_relative "plugins"
+
 module SmartProperties
 	class Property
+    # Runtime = PluginRepository.build_runtime(
+    #   RequiredCheck,
+    #   Conversion,
+    #   RequiredCheck,
+    #   AcceptanceCheck,
+    # )
+
     Runtime = Struct.new(:required, :converts, :accepts, :default, :instance_variable_name, :property, keyword_init: true) do
-      def required?(scope)
-        required.kind_of?(Proc) ? scope.instance_exec(&required) : !!required
-      end
-
-      def optional?(scope)
-        !required?(scope)
-      end
-
       def missing?(scope)
         required?(scope) && !present?(scope)
       end
@@ -17,39 +20,29 @@ module SmartProperties
         !null_object?(get(scope))
       end
 
-      def convert(scope, value)
-        return value unless converts
-        return value if null_object?(value)
+      def optional?(scope)
+        !required?(scope)
+      end
 
-        case converts
-        when Symbol
-          converts.to_proc.call(value)
-        else
-          scope.instance_exec(value, &converts)
-        end
+      def required?(scope)
+        RequiredCheck.new(property, required).enabled?(scope)
+      end
+
+      def convert(scope, value)
+        Conversion.new(property, converts).call(scope, value)
       end
 
       def default(scope)
         self[:default].kind_of?(Proc) ? scope.instance_exec(&self[:default]) : self[:default].dup
       end
 
-      def accepts?(value, scope)
-        return true unless accepts
-        return true if null_object?(value)
-
-        if accepts.respond_to?(:to_proc)
-          !!scope.instance_exec(value, &accepts)
-        else
-          Array(accepts).any? { |accepts| accepts === value }
-        end
-      end
-
       def prepare(scope, value)
-        required = required?(scope)
-        raise MissingValueError.new(scope, property) if required && null_object?(value)
+        required_check = RequiredCheck.new(property, required)
+        required_check.call(scope, value)
         value = convert(scope, value)
-        raise MissingValueError.new(scope, property) if required && null_object?(value)
-        raise InvalidValueError.new(scope, property, value) unless accepts?(value, scope)
+        required_check.call(scope, value)
+        acceptance_check = AcceptanceCheck.new(property, accepts)
+        raise InvalidValueError.new(scope, property, value) unless acceptance_check.call(scope, value)
         value
       end
 
