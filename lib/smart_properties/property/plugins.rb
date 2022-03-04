@@ -29,9 +29,13 @@ module SmartProperties
 				:required
 			end
 
+			def enabled?(scope)
+				config.kind_of?(Proc) ? scope.instance_exec(&config) : !!config
+			end
+
 			def call(scope, value)
-				required = config.kind_of?(Proc) ? scope.instance_exec(&config) : !!config
-				raise MissingValueError.new(scope, property) if required && null_object?(value)
+				return value unless enabled?(scope)
+				raise MissingValueError.new(scope, property) if config && null_object?(value)
 				value
 			end
 		end

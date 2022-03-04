@@ -13,7 +13,7 @@ module SmartProperties
 
     Runtime = Struct.new(:required, :converts, :accepts, :default, :instance_variable_name, :property, keyword_init: true) do
       def required?(scope)
-        required.kind_of?(Proc) ? scope.instance_exec(&required) : !!required
+        RequiredCheck.new(property, required).enabled?(scope)
       end
 
       def optional?(scope)
@@ -56,10 +56,10 @@ module SmartProperties
       end
 
       def prepare(scope, value)
-        required = required?(scope)
-        raise MissingValueError.new(scope, property) if required && null_object?(value)
+        required_check = RequiredCheck.new(property, required)
+        required_check.call(scope, value)
         value = convert(scope, value)
-        raise MissingValueError.new(scope, property) if required && null_object?(value)
+        required_check.call(scope, value)
         raise InvalidValueError.new(scope, property, value) unless accepts?(value, scope)
         value
       end
