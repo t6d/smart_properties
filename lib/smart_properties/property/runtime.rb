@@ -12,14 +12,6 @@ module SmartProperties
     # )
 
     Runtime = Struct.new(:required, :converts, :accepts, :default, :instance_variable_name, :property, keyword_init: true) do
-      def required?(scope)
-        RequiredCheck.new(property, required).enabled?(scope)
-      end
-
-      def optional?(scope)
-        !required?(scope)
-      end
-
       def missing?(scope)
         required?(scope) && !present?(scope)
       end
@@ -28,16 +20,16 @@ module SmartProperties
         !null_object?(get(scope))
       end
 
-      def convert(scope, value)
-        return value unless converts
-        return value if null_object?(value)
+      def optional?(scope)
+        !required?(scope)
+      end
 
-        case converts
-        when Symbol
-          converts.to_proc.call(value)
-        else
-          scope.instance_exec(value, &converts)
-        end
+      def required?(scope)
+        RequiredCheck.new(property, required).enabled?(scope)
+      end
+
+      def convert(scope, value)
+        Conversion.new(property, converts).call(scope, value)
       end
 
       def default(scope)

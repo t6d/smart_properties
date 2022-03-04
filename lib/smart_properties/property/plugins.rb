@@ -46,14 +46,14 @@ module SmartProperties
 			end
 
 			def call(scope, value)
-				return value unless converts
+				return value unless config
 				return value if null_object?(value)
 
 				case config
 				when Symbol
 					config.to_proc.call(value)
 				else
-					scope.instance_exec(value, &converts)
+					scope.instance_exec(value, &config)
 				end
 			end
 		end
