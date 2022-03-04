@@ -36,23 +36,13 @@ module SmartProperties
         self[:default].kind_of?(Proc) ? scope.instance_exec(&self[:default]) : self[:default].dup
       end
 
-      def accepts?(value, scope)
-        return true unless accepts
-        return true if null_object?(value)
-
-        if accepts.respond_to?(:to_proc)
-          !!scope.instance_exec(value, &accepts)
-        else
-          Array(accepts).any? { |accepts| accepts === value }
-        end
-      end
-
       def prepare(scope, value)
         required_check = RequiredCheck.new(property, required)
         required_check.call(scope, value)
         value = convert(scope, value)
         required_check.call(scope, value)
-        raise InvalidValueError.new(scope, property, value) unless accepts?(value, scope)
+        acceptance_check = AcceptanceCheck.new(property, accepts)
+        raise InvalidValueError.new(scope, property, value) unless acceptance_check.call(scope, value)
         value
       end
 

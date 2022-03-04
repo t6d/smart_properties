@@ -64,8 +64,8 @@ module SmartProperties
 			end
 
 			def call(scope, value)
-				return value if accepts?(scope, value)
-				raise InvalidValueError.new(scope, property, value) unless accepts?(value, scope)
+				return true if accepts?(scope, value)
+				raise InvalidValueError.new(scope, property, value)
 			end
 
 			private
@@ -75,7 +75,7 @@ module SmartProperties
 				return true if null_object?(value)
 
 				if config.respond_to?(:to_proc)
-					!!config.instance_exec(value, &config)
+					!!scope.instance_exec(value, &config)
 				else
 					Array(config).any? { |config| config === value }
 				end
