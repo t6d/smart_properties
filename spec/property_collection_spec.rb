@@ -36,4 +36,14 @@ RSpec.describe SmartProperties, "property collection caching:" do
       expect(base_class.new).to have_smart_property(:title)
     end.not_to raise_error(SystemStackError)
   end
+
+  specify "PropertyCollection has O(1) #count" do
+    property_collection = Class.new(SmartProperties::PropertyCollection) do
+      def collection_with_parent_collection
+        mock('collection').expects(:count).once.returns(42)
+      end
+    end
+
+    expect(property_collection.new.count).to eq(42)
+  end
 end
