@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
     "source_code_uri" => "https://github.com/t6d/smart_properties"
   }
 
-  gem.files         = `git ls-files`.split($\)
+  gem.files         = `git ls-files`.split($\).grep_v(%r{^spec/})
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.name          = "smart_properties"
