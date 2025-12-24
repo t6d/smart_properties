@@ -11,6 +11,7 @@ Gem::Specification.new do |gem|
   DESCRIPTION
   gem.summary       = %q{SmartProperties – Ruby accessors on steroids}
   gem.homepage      = ""
+  gem.license       = "MIT"
 
   gem.metadata = {
     "source_code_uri" => "https://github.com/t6d/smart_properties"
